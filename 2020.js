@@ -56,7 +56,7 @@ class Players {
     addPlayer(player, obj) {
         if (player == null)
             throw "Player can't be null";
-        this[obj][player.id] = {
+        obj[player.id] = {
             auth: player.auth,
             conn: player.conn,
             name: player.name,
