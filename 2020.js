@@ -113,6 +113,14 @@ class Players {
     reset(obj) {
         Object.keys(obj).forEach(k => delete obj[k]);
     }
+    moveFirstPlayerTo(team, teamFunctionName) {
+        let p = _room.players.getSpecs()[0];
+        if (p != null) {
+            _room.players[teamFunctionName]().forEach(p => room.setPlayerTeam(p.id, TEAM.spec));
+            room.setPlayerTeam(p.id, team);
+        }
+        _room.controller.rr();
+    }
 }
 
 
@@ -217,6 +225,8 @@ class Controller {
             "rm": this.removeAdmin,
             "admins": this.adminList,
             "bans": this.banList,
+            "sb": this.firstSpecToBlue,
+            "sr": this.firstSpecToRed,
         };
     }
 
@@ -261,7 +271,7 @@ class Controller {
     }
 
     rr(player) {
-        if (!player.admin) {
+        if (player != null && !player.admin) {
             _room.view.notAllowed(player);
         } else {
             room.stopGame();
@@ -374,6 +384,20 @@ class Controller {
         return false;
     }
 
+    firstSpecToRed(player) {
+        if (!player.admin) {
+            _room.view.notAllowed(player);
+        } else {
+            _room.players.moveFirstPlayerTo(TEAM.red, "getReds");
+        }
+    }
+    firstSpecToBlue(player) {
+        if (!player.admin) {
+            _room.view.notAllowed(player);
+        } else {
+            _room.players.moveFirstPlayerTo(TEAM.blue, "getBlues");
+        }
+    }
 }
 
 
