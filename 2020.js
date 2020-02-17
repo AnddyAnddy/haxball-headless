@@ -1,3 +1,5 @@
+// _room.players.addAdmin(room.getPlayer(1))
+
 /*jshint esversion: 6 */
 /*jslint browser: true */
 /*global window */
@@ -8,6 +10,9 @@
 let room = HBInit({ noPlayer: true });
 const DEV_NAME = "Anddy";
 const DISCORD = "...";
+const ADMIN_TEAM = {
+    "Qk6eJltmZBTFAyR3Vw9c-I3Vj6f0wCaZbvrY8Hki3X8": "Anddy",
+}
 
 const TEAM = {
     spec: 0,
@@ -17,15 +22,18 @@ const TEAM = {
 
 
 class Players {
-    constructor() {
-        this.playersInRoom = {};
-        this.bannedPlayers = {};
-        this.mutedPlayers = {};
-        this.superAdmins = {};
+    constructor(inRoom, banned, muted, superAdmins) {
+        this.inRoom = inRoom || {};
+        this.banned = banned || {};
+        this.muted = muted || {};
+        this.superAdmins = superAdmins || {};
+        this.idPlayer = 0;
     }
 
-    autoAdmin() {
+    autoAdmin(player) {
         room.setPlayerAdmin(Math.min(...this.getPlayerList().map(p => p = p.id)), true);
+        if (player != null && this.superAdmins.hasOwnProperty(player.auth))
+            room.setPlayerAdmin(player.id, true);
     }
     getPlayerList() {
         return room.getPlayerList().filter(p => p.id !== 0);
@@ -64,11 +72,47 @@ class Players {
         };
     }
 
-    removePlayer(player) {
-        if (player == null)
-            throw "Player can't be null";
+    updateAdminLastJoin(player) {
+        if (this.superAdmins.hasOwnProperty(player.auth))
+            this.superAdmins[player.auth].lastJoin = getDate();
+    }
+    addAdmin({ player, auth, name } = {}) {
+        if (auth == null) {
+            this.superAdmins[this.inRoom[player.id].auth] =
+                { name: player.name, id: this.idPlayer++, date: getDate(), lastJoin: getDate() };
+        }
+        else {
+            this.superAdmins[auth] =
+                { name: name, id: this.idPlayer++, date: getDate(), lastJoin: getDate() };
+        }
+    }
+    deleteAdmin(id) {
+        let auth = Object.keys(this.superAdmins).
+            find(auth => this.superAdmins[auth].id === id);
+        if (auth != null) {
+            let name = this.superAdmins[auth].name;
+            delete this.superAdmins[auth];
+            return name;
+        }
+    }
 
-        delete this.playersInRoom[player.id];
+    removePlayer({ player, obj, id }) {
+        if (player == null)
+            return delete obj[id];
+
+        return delete obj[player.id];
+    }
+    isSuperAdmin(player) {
+        return this.superAdmins.hasOwnProperty(this.inRoom[player.id].auth);
+    }
+
+    initAdmins() {
+        Object.keys(ADMIN_TEAM).forEach(auth => {
+            this.addAdmin({ auth: auth, name: ADMIN_TEAM[auth] });
+        })
+    }
+    reset(obj) {
+        Object.keys(obj).forEach(k => delete obj[k]);
     }
 }
 
@@ -88,6 +132,8 @@ class View {
             },
         };
     }
+
+
     join(player) {
         room.sendAnnouncement(`Welcome ${player.name} #${player.id} at ${getDate()}, by ${DEV_NAME}.`,
             player.id, this.texts.colors.info, this.texts.fonts.info, 0);
@@ -115,12 +161,45 @@ class View {
 
     }
 
-
     notAllowed(player) {
         room.sendAnnouncement(`You were not allowed to execute this command`,
             player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
     }
 
+    failed(player) {
+        room.sendAnnouncement(`The command you tried to execute failed`,
+            player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
+    }
+
+    unbanAfterBan(player) {
+        room.sendAnnouncement(`${player.name} has been unbanned `,
+            null, this.texts.colors.resolved, this.texts.fonts.info, 0);
+    }
+
+    addAdmin(player, newAdmin) {
+        room.sendAnnouncement(`${newAdmin.name} has been added as super admin `,
+            player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
+    }
+
+    removeAdmin(player, name = "nobody") {
+        room.sendAnnouncement(`${name} has been removed from super admin `,
+            player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
+    }
+
+    adminList(player) {
+        Object.keys(_room.players.superAdmins).forEach(auth => {
+
+            let p = _room.players.superAdmins[auth];
+            room.sendAnnouncement(`${p.name}: { id: ${p.id}, since: ${p.date}, last connexion: ${p.lastJoin} }`,
+                player.id, this.texts.colors.info, this.texts.fonts.info, 0);
+        })
+    }
+    banList(player) {
+        Object.keys(_room.players.banned).forEach(id => {
+            room.sendAnnouncement(`${id}: ${_room.players.banned[id].name}`,
+                player.id, this.texts.colors.info, this.texts.fonts.info, 0);
+        })
+    }
 }
 
 class Controller {
@@ -138,6 +217,10 @@ class Controller {
             "unban": this.unban,
             "fs": this.fs,
             "1": this.oneVs,
+            "add": this.addAdmin,
+            "rm": this.removeAdmin,
+            "admins": this.adminList,
+            "bans": this.banList,
         };
     }
 
@@ -158,6 +241,10 @@ class Controller {
             return this.commands[cmd](player, message);
         }
         return true;
+    }
+
+    static getIdFromMessage(message, cmd) {
+        return parseInt(message.substr(cmd.length + 1, message.length));
     }
 
 
@@ -206,10 +293,11 @@ class Controller {
         return false;
     }
     clear(player) {
-        if (!player.admin) {
+        if (!_room.players.isSuperAdmin(player)) {
             _room.view.notAllowed(player);
         } else {
             room.clearBans();
+            _room.players.reset(_room.players.banned);
             _room.view.clearBans(player);
         }
         return false;
@@ -218,9 +306,10 @@ class Controller {
         if (!player.admin) {
             _room.view.notAllowed(player);
         } else {
-            let id = parseInt(message.substr("!unban ".length, message.length));
+            let id = Controller.getIdFromMessage(message, "!unban");
             if (!isNaN(id)) {
                 room.clearBan(id);
+                _room.players.removePlayer({ id: id, obj: _room.players.banned });
                 _room.view.unban(player);
             }
         }
@@ -249,10 +338,47 @@ class Controller {
         }
         return false;
     }
-
+    addAdmin(player, message) {
+        if (!_room.players.isSuperAdmin(player)) {
+            _room.view.notAllowed(player);
+        } else {
+            let id = Controller.getIdFromMessage(message, "!add");
+            let p;
+            if (!isNaN(id) && (p = room.getPlayer(id)) != null) {
+                _room.players.addAdmin({ player: p });
+                _room.view.addAdmin(player, p);
+            }
+            else {
+                room.view.failed(player);
+            }
+        }
+        return false;
+    }
+    removeAdmin(player, message) {
+        if (!_room.players.isSuperAdmin(player)) {
+            _room.view.notAllowed(player);
+        } else {
+            let id = Controller.getIdFromMessage(message, "!rm");
+            if (!isNaN(id)) {
+                let name = _room.players.deleteAdmin(id);
+                _room.view.removeAdmin(player, name);
+            }
+            else {
+                _room.view.failed(player);
+            }
+        }
+        return false;
+    }
+    adminList(player) {
+        _room.view.adminList(player);
+        return false;
+    }
+    banList(player) {
+        _room.view.banList(player);
+        return false;
+    }
 
 }
-
 
 
 class Room {
@@ -262,16 +388,34 @@ class Room {
         this.controller = new Controller();
     }
     onPlayerJoin(player) {
-        this.players.autoAdmin();
-        this.players.addPlayer(player, this.players.playersInRoom);
+        this.players.autoAdmin(player);
+        this.players.addPlayer(player, this.players.inRoom);
+        this.players.updateAdminLastJoin(player);
         this.view.join(player);
     }
     onPlayerLeave(player) {
         this.players.autoAdmin();
-        this.players.removePlayer(player);
+        this.players.removePlayer({ player: player, obj: this.players.inRoom });
     }
     onPlayerChat(player, message) {
         return this.controller.resolveCommand(player, message);
+    }
+    onPlayerKicked(player, message, ban, by) {
+        if (by.id === 0) return;
+        if (ban) {
+            if (!this.players.superAdmins.hasOwnProperty(this.players.inRoom[by.id].auth)) {
+                room.clearBan(player.id);
+                room.kickPlayer(by.id, "You can't ban a player", true);
+                this.view.unbanAfterBan(player);
+                this.players.addPlayer(by, this.players.banned);
+            }
+            else {
+                this.players.addPlayer(player, this.players.banned);
+            }
+        }
+    }
+    onRoomLink() {
+        this.players.initAdmins();
     }
 
 }
@@ -301,4 +445,12 @@ room.onPlayerLeave = (player) => {
 
 room.onPlayerChat = (player, message) => {
     return _room.onPlayerChat(player, message);
+};
+
+room.onPlayerKicked = (player, message, ban, by) => {
+    _room.onPlayerKicked(player, message, ban, by);
+};
+
+room.onRoomLink = () => {
+    _room.onRoomLink();
 };
