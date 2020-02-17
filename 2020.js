@@ -1,4 +1,3 @@
-// _room.players.addAdmin(room.getPlayer(1))
 
 /*jshint esversion: 6 */
 /*jslint browser: true */
@@ -107,8 +106,8 @@ class Players {
     }
 
     initAdmins() {
-        Object.keys(ADMIN_TEAM).forEach(auth => {
-            this.addAdmin({ auth: auth, name: ADMIN_TEAM[auth] });
+        Object.entries(ADMIN_TEAM).forEach(([auth, name]) => {
+            this.addAdmin({ auth: auth, name: name });
         })
     }
     reset(obj) {
@@ -154,7 +153,6 @@ class View {
             player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
     }
 
-    // TODO: store in banned players object to get the player name with banned[id]
     unban(player) {
         room.sendAnnouncement(`This player has been unbanned `,
             player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
@@ -187,16 +185,14 @@ class View {
     }
 
     adminList(player) {
-        Object.keys(_room.players.superAdmins).forEach(auth => {
-
-            let p = _room.players.superAdmins[auth];
+        Object.entries(_room.players.superAdmins).forEach(([auth, p]) => {
             room.sendAnnouncement(`${p.name}: { id: ${p.id}, since: ${p.date}, last connexion: ${p.lastJoin} }`,
                 player.id, this.texts.colors.info, this.texts.fonts.info, 0);
         })
     }
     banList(player) {
-        Object.keys(_room.players.banned).forEach(id => {
-            room.sendAnnouncement(`${id}: ${_room.players.banned[id].name}`,
+        Object.entries(_room.players.banned).forEach(([id, p]) => {
+            room.sendAnnouncement(`${id}: ${p.name}`,
                 player.id, this.texts.colors.info, this.texts.fonts.info, 0);
         })
     }
