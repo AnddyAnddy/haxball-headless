@@ -204,29 +204,33 @@ class View {
                 player.id, this.texts.colors.info, this.texts.fonts.info, 0);
         })
     }
+    commandDisabled(player) {
+        room.sendAnnouncement(`This command has been disabled`,
+            player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
+    }
 }
 
 class Controller {
 
     constructor() {
         this.commands = {
-            "help": this.help,
-            "swap": this.swap,
-            "s": this.swap,
-            "rr": this.rr,
-            "rrs": this.rrs,
-            "k": this.k,
-            "bb": this.bb,
-            "clear": this.clear,
-            "unban": this.unban,
-            "fs": this.fs,
-            "1": this.oneVs,
-            "add": this.addAdmin,
-            "rm": this.removeAdmin,
-            "admins": this.adminList,
-            "bans": this.banList,
-            "sb": this.firstSpecToBlue,
-            "sr": this.firstSpecToRed,
+            "help": { fun: this.help, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "swap": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
+            "s": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
+            "rr": { fun: this.rr, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "rrs": { fun: this.rrs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "k": { fun: this.k, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "bb": { fun: this.bb, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "clear": { fun: this.clear, enabled: true, argc: 0, adminLevel: 2, displayed: false },
+            "unban": { fun: this.unban, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "fs": { fun: this.fs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "1": { fun: this.oneVs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "add": { fun: this.addAdmin, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "rm": { fun: this.removeAdmin, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "admins": { fun: this.adminList, enabled: true, argc: 0, adminLevel: 2, displayed: false },
+            "bans": { fun: this.banList, enabled: true, argc: 0, adminLevel: 2, displayed: false },
+            "sb": { fun: this.firstSpecToBlue, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "sr": { fun: this.firstSpecToRed, enabled: true, argc: 0, adminLevel: 1, displayed: false },
         };
     }
 
@@ -238,15 +242,34 @@ class Controller {
         let spacePos = message.search(" ");
         return message.substr(1, spacePos !== -1 ? spacePos - 1 : message.length);
     }
+
+    isCommandEnabled(cmdObj, player) {
+        if (cmdObj.enabled === false)
+            view.commandDisabled(player);
+        return cmdObj.enabled;
+    }
+    isCommandDisplayed(cmdObj) {
+        return cmdObj.displayed;
+    }
+    isPlayerAllowed(cmdObj, player) {
+        let bool = _room.players.isSuperAdmin(player) || cmdObj.adminLevel <= player.admin;
+        if (!bool)
+            view.notAllowed(player);
+        return bool;
+    }
     resolveCommand(player, message) {
         if (!this.isACommand(message))
             return true;
 
         let cmd = this.extractCommand(message);
-        if (this.commands.hasOwnProperty(cmd)) {
-            return this.commands[cmd](player, message);
+        let cmdObj = this.commands[cmd];
+        if (cmdObj != null) {
+            return _room.controller.isCommandEnabled(cmdObj, player) &&
+                _room.controller.isPlayerAllowed(cmdObj, player) &&
+                cmdObj.fun(player, message) == null &&
+                _room.controller.isCommandDisplayed(cmdObj);
         }
-        return true;
+        return !this.isACommand(message);
     }
 
     static getIdFromMessage(message, cmd) {
@@ -284,7 +307,7 @@ class Controller {
             _room.view.notAllowed(player);
         } else {
             room.stopGame();
-            this.swap(player);
+            _room.controller.swap(player);
             room.startGame();
         }
         return true;
@@ -329,7 +352,7 @@ class Controller {
             room.setTimeLimit(7);
             room.setScoreLimit(0);
             room.setDefaultStadium("Big");
-            this.k();
+            _room.controller.k();
         }
         return false;
     }
