@@ -208,6 +208,11 @@ class View {
         room.sendAnnouncement(`This command has been disabled`,
             player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
     }
+    commandEnabled(player) {
+        room.sendAnnouncement(`This command has been enabled`,
+            player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
+    }
+
 }
 
 class Controller {
@@ -215,22 +220,24 @@ class Controller {
     constructor() {
         this.commands = {
             "help": { fun: this.help, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "k": { fun: this.k, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "bb": { fun: this.bb, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "swap": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "s": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "rr": { fun: this.rr, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "rrs": { fun: this.rrs, enabled: true, argc: 0, adminLevel: 1, displayed: true },
-            "k": { fun: this.k, enabled: true, argc: 0, adminLevel: 0, displayed: false },
-            "bb": { fun: this.bb, enabled: true, argc: 0, adminLevel: 0, displayed: false },
-            "clear": { fun: this.clear, enabled: true, argc: 0, adminLevel: 2, displayed: false },
-            "unban": { fun: this.unban, enabled: true, argc: 1, adminLevel: 2, displayed: false },
             "fs": { fun: this.fs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
             "1": { fun: this.oneVs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "sb": { fun: this.firstSpecToBlue, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "sr": { fun: this.firstSpecToRed, enabled: true, argc: 0, adminLevel: 1, displayed: false },
             "add": { fun: this.addAdmin, enabled: true, argc: 1, adminLevel: 2, displayed: false },
             "rm": { fun: this.removeAdmin, enabled: true, argc: 1, adminLevel: 2, displayed: false },
             "admins": { fun: this.adminList, enabled: true, argc: 0, adminLevel: 2, displayed: false },
             "bans": { fun: this.banList, enabled: true, argc: 0, adminLevel: 2, displayed: false },
-            "sb": { fun: this.firstSpecToBlue, enabled: true, argc: 0, adminLevel: 1, displayed: false },
-            "sr": { fun: this.firstSpecToRed, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "clear": { fun: this.clear, enabled: true, argc: 0, adminLevel: 2, displayed: false },
+            "unban": { fun: this.unban, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "disable": { fun: this.disable, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "enable": { fun: this.enable, enabled: true, argc: 1, adminLevel: 2, displayed: false },
         };
     }
 
@@ -271,11 +278,12 @@ class Controller {
         }
         return !this.isACommand(message);
     }
-
-    getIdFromMessage(message, cmd) {
-        return parseInt(message.substr(cmd.length + 1, message.length));
+    getArg1(message, cmd) {
+        return message.substr(cmd.length + 1, message.length);
     }
-
+    getIdFromMessage(message, cmd) {
+        return parseInt(_room.controller.getArg1(message, cmd));
+    }
 
     help(player) {
         _room.view.help(player);
@@ -372,6 +380,23 @@ class Controller {
     }
     firstSpecToBlue(player) {
         _room.players.moveFirstPlayerTo(TEAM.blue, "getBlues");
+    }
+    toggleCommand(player, message, cmd, isEnable, display) {
+        let arg = _room.controller.getArg1(message, cmd);
+        if (_room.controller.commands.hasOwnProperty(arg)) {
+            _room.controller.commands[arg] = isEnable;
+            _room.view[display](player);
+            return;
+        }
+        _room.view.failed(player);
+    }
+    enable(player, message) {
+        _room.controller.toggleCommand(player, message, "!enable",
+            true, "commandEnabled");
+    }
+    disable(player, message) {
+        _room.controller.toggleCommand(player, message, "!disable",
+            true, "commandDisabled");
     }
 }
 
