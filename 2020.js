@@ -217,8 +217,8 @@ class Controller {
             "help": { fun: this.help, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "swap": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "s": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
-            "rr": { fun: this.rr, enabled: true, argc: 0, adminLevel: 1, displayed: false },
-            "rrs": { fun: this.rrs, enabled: true, argc: 0, adminLevel: 1, displayed: false },
+            "rr": { fun: this.rr, enabled: true, argc: 0, adminLevel: 1, displayed: true },
+            "rrs": { fun: this.rrs, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "k": { fun: this.k, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "bb": { fun: this.bb, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "clear": { fun: this.clear, enabled: true, argc: 0, adminLevel: 2, displayed: false },
@@ -245,7 +245,7 @@ class Controller {
 
     isCommandEnabled(cmdObj, player) {
         if (cmdObj.enabled === false)
-            view.commandDisabled(player);
+            _room.view.commandDisabled(player);
         return cmdObj.enabled;
     }
     isCommandDisplayed(cmdObj) {
@@ -254,7 +254,7 @@ class Controller {
     isPlayerAllowed(cmdObj, player) {
         let bool = _room.players.isSuperAdmin(player) || cmdObj.adminLevel <= player.admin;
         if (!bool)
-            view.notAllowed(player);
+            _room.view.notAllowed(player);
         return bool;
     }
     resolveCommand(player, message) {
@@ -272,154 +272,106 @@ class Controller {
         return !this.isACommand(message);
     }
 
-    static getIdFromMessage(message, cmd) {
+    getIdFromMessage(message, cmd) {
         return parseInt(message.substr(cmd.length + 1, message.length));
     }
 
 
     help(player) {
         _room.view.help(player);
-        return false;
     }
     swap(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            _room.players.getNonSpecs().forEach(p => {
-                room.setPlayerTeam(p.id, TEAM.red + (p.team === TEAM.red));
-            });
-            _room.view.swap(player);
-        }
-        return true;
+
+        _room.players.getNonSpecs().forEach(p => {
+            room.setPlayerTeam(p.id, TEAM.red + (p.team === TEAM.red));
+        });
+        _room.view.swap(player);
+
     }
 
     rr(player) {
-        if (player != null && !player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            room.stopGame();
-            room.startGame();
-        }
-        return true;
+        room.stopGame();
+        room.startGame();
     }
     rrs(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            room.stopGame();
-            _room.controller.swap(player);
-            room.startGame();
-        }
-        return true;
+        room.stopGame();
+        _room.controller.swap(player);
+        room.startGame();
     }
     k() {
         room.setKickRateLimit(6, 0, 0);
-        return false;
     }
 
     bb(player) {
         room.kickPlayer(player.id, "bye !", false);
-        return false;
     }
     clear(player) {
-        if (!_room.players.isSuperAdmin(player)) {
-            _room.view.notAllowed(player);
-        } else {
-            room.clearBans();
-            _room.players.reset(_room.players.banned);
-            _room.view.clearBans(player);
-        }
-        return false;
+        room.clearBans();
+        _room.players.reset(_room.players.banned);
+        _room.view.clearBans(player);
     }
     unban(player, message) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            let id = Controller.getIdFromMessage(message, "!unban");
-            if (!isNaN(id)) {
-                room.clearBan(id);
-                _room.players.removePlayer({ id: id, obj: _room.players.banned });
-                _room.view.unban(player);
-            }
+        let id = _room.controller.getIdFromMessage(message, "!unban");
+        if (!isNaN(id)) {
+            room.clearBan(id);
+            _room.players.removePlayer({ id: id, obj: _room.players.banned });
+            _room.view.unban(player);
         }
-        return false;
     }
 
     fs(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            room.setTimeLimit(7);
-            room.setScoreLimit(0);
-            room.setDefaultStadium("Big");
-            _room.controller.k();
-        }
-        return false;
+        room.stopGame();
+        room.setTimeLimit(7);
+        room.setScoreLimit(0);
+        room.setDefaultStadium("Big");
+        _room.controller.k();
     }
     oneVs(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            room.setTimeLimit(3);
-            room.setScoreLimit(3);
-            room.setDefaultStadium("Classic");
-            this.k();
-        }
-        return false;
+
+        room.setTimeLimit(3);
+        room.setScoreLimit(3);
+        room.setDefaultStadium("Classic");
+        _room.controller.k();
+
     }
     addAdmin(player, message) {
-        if (!_room.players.isSuperAdmin(player)) {
-            _room.view.notAllowed(player);
-        } else {
-            let id = Controller.getIdFromMessage(message, "!add");
-            let p;
-            if (!isNaN(id) && (p = room.getPlayer(id)) != null) {
-                _room.players.addAdmin({ player: p });
-                _room.view.addAdmin(player, p);
-            }
-            else {
-                room.view.failed(player);
-            }
+
+        let id = _room.controller.getIdFromMessage(message, "!add");
+        let p;
+        if (!isNaN(id) && (p = room.getPlayer(id)) != null) {
+            _room.players.addAdmin({ player: p });
+            _room.view.addAdmin(player, p);
         }
-        return false;
+        else {
+            room.view.failed(player);
+        }
+
     }
     removeAdmin(player, message) {
-        if (!_room.players.isSuperAdmin(player)) {
-            _room.view.notAllowed(player);
-        } else {
-            let id = Controller.getIdFromMessage(message, "!rm");
-            if (!isNaN(id)) {
-                let name = _room.players.deleteAdmin(id);
-                _room.view.removeAdmin(player, name);
-            }
-            else {
-                _room.view.failed(player);
-            }
+
+        let id = _room.controller.getIdFromMessage(message, "!rm");
+        if (!isNaN(id)) {
+            let name = _room.players.deleteAdmin(id);
+            _room.view.removeAdmin(player, name);
         }
-        return false;
+        else {
+            _room.view.failed(player);
+        }
+
     }
     adminList(player) {
         _room.view.adminList(player);
-        return false;
     }
     banList(player) {
         _room.view.banList(player);
-        return false;
     }
 
     firstSpecToRed(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            _room.players.moveFirstPlayerTo(TEAM.red, "getReds");
-        }
+        _room.players.moveFirstPlayerTo(TEAM.red, "getReds");
+
     }
     firstSpecToBlue(player) {
-        if (!player.admin) {
-            _room.view.notAllowed(player);
-        } else {
-            _room.players.moveFirstPlayerTo(TEAM.blue, "getBlues");
-        }
+        _room.players.moveFirstPlayerTo(TEAM.blue, "getBlues");
     }
 }
 
