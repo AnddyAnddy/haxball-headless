@@ -6,7 +6,10 @@
 /*global HBInit */
 
 
-let room = HBInit({ noPlayer: true });
+let room = HBInit({
+    roomName: "1vs1 pro Anddy", maxPlayers: 4, public: true, geo:
+        { "code": "fr", "lat": 48.1371540, "lon": 2.5761240 }, noPlayer: true
+});
 const DEV_NAME = "Anddy";
 const DISCORD = "...";
 const ADMIN_TEAM = {
@@ -30,7 +33,8 @@ class Players {
     }
 
     autoAdmin(player) {
-        room.setPlayerAdmin(Math.min(...this.getPlayerList().map(p => p = p.id)), true);
+        room.setPlayerAdmin(Math.min(...this.getPlayerList().
+            map(p => p = p.id)), true);
         if (player != null && this.superAdmins.hasOwnProperty(player.auth))
             room.setPlayerAdmin(player.id, true);
     }
@@ -75,22 +79,28 @@ class Players {
         if (this.superAdmins.hasOwnProperty(player.auth))
             this.superAdmins[player.auth].lastJoin = getDate();
     }
-    addAdmin({ player, auth, name } = {}) {
+    addAuthObject({ player, auth, name, objName } = {}) {
         if (auth == null) {
-            this.superAdmins[this.inRoom[player.id].auth] =
-                { name: player.name, id: this.idPlayer++, date: getDate(), lastJoin: getDate() };
+            this[objName][this.inRoom[player.id].auth] =
+            {
+                name: player.name, id: this.idPlayer++,
+                date: getDate(), lastJoin: getDate()
+            };
         }
         else {
-            this.superAdmins[auth] =
-                { name: name, id: this.idPlayer++, date: getDate(), lastJoin: getDate() };
+            this[objName][auth] =
+            {
+                name: name, id: this.idPlayer++,
+                date: getDate(), lastJoin: getDate()
+            };
         }
     }
-    deleteAdmin(id) {
-        let auth = Object.keys(this.superAdmins).
-            find(auth => this.superAdmins[auth].id === id);
+    deleteAuthObj(id, objName) {
+        let auth = Object.keys(this[objName]).
+            find(auth => this[objName][auth].id === id);
         if (auth != null) {
-            let name = this.superAdmins[auth].name;
-            delete this.superAdmins[auth];
+            let name = this[objName][auth].name;
+            delete this[objName][auth];
             return name;
         }
     }
@@ -107,7 +117,7 @@ class Players {
 
     initAdmins() {
         Object.entries(ADMIN_TEAM).forEach(([auth, name]) => {
-            this.addAdmin({ auth: auth, name: name });
+            this.addAuthObject({ auth: auth, name: name, objName: "superAdmins" });
         })
     }
     reset(obj) {
@@ -116,10 +126,14 @@ class Players {
     moveFirstPlayerTo(team, teamFunctionName) {
         let p = _room.players.getSpecs()[0];
         if (p != null) {
-            _room.players[teamFunctionName]().forEach(p => room.setPlayerTeam(p.id, TEAM.spec));
+            _room.players[teamFunctionName]()
+                .forEach(p => room.setPlayerTeam(p.id, TEAM.spec));
             room.setPlayerTeam(p.id, team);
         }
         _room.controller.rr();
+    }
+    isMuted(player) {
+        return this.muted.hasOwnProperty(this.inRoom[player.id].auth);
     }
 }
 
@@ -142,7 +156,8 @@ class View {
 
 
     join(player) {
-        room.sendAnnouncement(`Welcome ${player.name} #${player.id} at ${getDate()}, by ${DEV_NAME}.`,
+        room.sendAnnouncement(`Welcome ${player.name} #${player.id} at` +
+            `${getDate()}, room made by ${DEV_NAME}.`,
             player.id, this.texts.colors.info, this.texts.fonts.info, 0);
     }
 
@@ -194,7 +209,8 @@ class View {
 
     adminList(player) {
         Object.entries(_room.players.superAdmins).forEach(([auth, p]) => {
-            room.sendAnnouncement(`${p.name}: { id: ${p.id}, since: ${p.date}, last connexion: ${p.lastJoin} }`,
+            room.sendAnnouncement(`${p.name}: { id: ${p.id}, 
+                since: ${p.date}, last connexion: ${p.lastJoin} }`,
                 player.id, this.texts.colors.info, this.texts.fonts.info, 0);
         })
     }
@@ -212,7 +228,21 @@ class View {
         room.sendAnnouncement(`This command has been enabled`,
             player.id, this.texts.colors.failed, this.texts.fonts.info, 0);
     }
-
+    muted(player, newMuted) {
+        room.sendAnnouncement(`${newMuted.name} has been muted`,
+            player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
+    }
+    unmute(player, name = "nobody") {
+        room.sendAnnouncement(`${name} has been unmuted`,
+            player.id, this.texts.colors.resolved, this.texts.fonts.info, 0);
+    }
+    muteList(player) {
+        Object.entries(_room.players.muted).forEach(([auth, p]) => {
+            room.sendAnnouncement(`${p.name}: { id: ${p.id}, 
+                since: ${p.date}, last connexion: ${p.lastJoin} }`,
+                player.id, this.texts.colors.info, this.texts.fonts.info, 0);
+        })
+    }
 }
 
 class Controller {
@@ -238,6 +268,9 @@ class Controller {
             "unban": { fun: this.unban, enabled: true, argc: 1, adminLevel: 2, displayed: false },
             "disable": { fun: this.disable, enabled: true, argc: 1, adminLevel: 2, displayed: false },
             "enable": { fun: this.enable, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "mute": { fun: this.mute, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "unmute": { fun: this.unmute, enabled: true, argc: 1, adminLevel: 2, displayed: false },
+            "mutes": { fun: this.muteList, enabled: true, argc: 0, adminLevel: 2, displayed: false },
         };
     }
 
@@ -259,7 +292,8 @@ class Controller {
         return cmdObj.displayed;
     }
     isPlayerAllowed(cmdObj, player) {
-        let bool = _room.players.isSuperAdmin(player) || cmdObj.adminLevel <= player.admin;
+        let bool = _room.players.isSuperAdmin(player) ||
+            cmdObj.adminLevel <= player.admin;
         if (!bool)
             _room.view.notAllowed(player);
         return bool;
@@ -284,6 +318,29 @@ class Controller {
     getIdFromMessage(message, cmd) {
         return parseInt(_room.controller.getArg1(message, cmd));
     }
+    addAuthObject(player, message, cmd, objName, displayName) {
+
+        let id = _room.controller.getIdFromMessage(message, cmd);
+        let p;
+        if (!isNaN(id) && (p = room.getPlayer(id)) != null) {
+            _room.players.addAuthObject({ player: p, objName: objName });
+            _room.view[displayName](player, p);
+        }
+        else {
+            room.view.failed(player);
+        }
+    }
+    removeAuthObject(player, message, cmd, objName, displayName) {
+        let id = _room.controller.getIdFromMessage(message, cmd);
+        if (!isNaN(id)) {
+            let name = _room.players.deleteAuthObj(id, objName);
+            _room.view[displayName](player, name);
+        }
+        else {
+            _room.view.failed(player);
+        }
+    }
+
 
     help(player) {
         _room.view.help(player);
@@ -343,29 +400,12 @@ class Controller {
 
     }
     addAdmin(player, message) {
-
-        let id = _room.controller.getIdFromMessage(message, "!add");
-        let p;
-        if (!isNaN(id) && (p = room.getPlayer(id)) != null) {
-            _room.players.addAdmin({ player: p });
-            _room.view.addAdmin(player, p);
-        }
-        else {
-            room.view.failed(player);
-        }
-
+        _room.controller.addAuthObject(player, message,
+            "!add", "superAdmins", "addAdmin");
     }
     removeAdmin(player, message) {
-
-        let id = _room.controller.getIdFromMessage(message, "!rm");
-        if (!isNaN(id)) {
-            let name = _room.players.deleteAdmin(id);
-            _room.view.removeAdmin(player, name);
-        }
-        else {
-            _room.view.failed(player);
-        }
-
+        _room.controller.removeAuthObject(player, message,
+            "!rm", "superAdmins", "removeAdmin");
     }
     adminList(player) {
         _room.view.adminList(player);
@@ -398,6 +438,17 @@ class Controller {
         _room.controller.toggleCommand(player, message, "!disable",
             true, "commandDisabled");
     }
+    mute(player, message) {
+        _room.controller.addAuthObject(player, message,
+            "!mute", "muted", "muted");
+    }
+    unmute(player, message) {
+        _room.controller.removeAuthObject(player, message,
+            "!unmute", "muted", "unmute");
+    }
+    muteList(player) {
+        _room.view.muteList(player);
+    }
 }
 
 
@@ -418,12 +469,15 @@ class Room {
         this.players.removePlayer({ player: player, obj: this.players.inRoom });
     }
     onPlayerChat(player, message) {
-        return this.controller.resolveCommand(player, message);
+        return this.controller.resolveCommand(player, message) &&
+            !this.players.isMuted(player);
     }
     onPlayerKicked(player, message, ban, by) {
         if (by.id === 0) return;
         if (ban) {
-            if (!this.players.superAdmins.hasOwnProperty(this.players.inRoom[by.id].auth)) {
+            if (!this.players.superAdmins.hasOwnProperty(this.players.
+                inRoom[by.id].auth)) {
+
                 room.clearBan(player.id);
                 room.kickPlayer(by.id, "You can't ban a player", true);
                 this.view.unbanAfterBan(player);
