@@ -6,8 +6,8 @@
 /*global HBInit */
 
 
-let room = HBInit({
-    roomName: "1vs1 pro Anddy", maxPlayers: 4, public: true, geo:
+const room = HBInit({
+    roomName: "1vs1 pro Anddy", maxPlayers: 14, public: false, geo:
         { "code": "fr", "lat": 48.1371540, "lon": 2.5761240 }, noPlayer: true
 });
 const DEV_NAME = "Anddy";
@@ -21,6 +21,8 @@ const TEAM = {
     red: 1,
     blue: 2,
 };
+
+let MAX_PLAYERS_PER_TEAM = 3;
 
 
 class Players {
@@ -252,6 +254,8 @@ class Controller {
             "help": { fun: this.help, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "k": { fun: this.k, enabled: true, argc: 0, adminLevel: 0, displayed: false },
             "bb": { fun: this.bb, enabled: true, argc: 0, adminLevel: 0, displayed: false },
+            "top": { fun: this.top, enabled: true, argc: 0, adminLevel: 0, displayed: true },
+            "rand": { fun: this.rand, enabled: true, argc: 0, adminLevel: 0, displayed: true },
             "swap": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "s": { fun: this.swap, enabled: true, argc: 0, adminLevel: 1, displayed: true },
             "rr": { fun: this.rr, enabled: true, argc: 0, adminLevel: 1, displayed: true },
@@ -392,7 +396,7 @@ class Controller {
         _room.controller.k();
     }
     oneVs(player) {
-
+        room.stopGame();
         room.setTimeLimit(3);
         room.setScoreLimit(3);
         room.setDefaultStadium("Classic");
@@ -448,6 +452,22 @@ class Controller {
     }
     muteList(player) {
         _room.view.muteList(player);
+    }
+    top(player) {
+        if (player.team === TEAM.spec || room.getScores() != null) {
+            _room.view.notAllowed(player);
+            return;
+        }
+        let nbPlayersToAdd;
+        if (player.team === TEAM.red)
+            nbPlayersToAdd = _room.players.getBlues().length - _room.players.getReds().length;
+        else
+            nbPlayersToAdd = _room.players.getReds().length - _room.players.getBlues().length;
+        let specs = _room.players.getSpecs();
+        let min = Math.min(...[nbPlayersToAdd + 1, specs.length, MAX_PLAYERS_PER_TEAM]);
+        for (let i = 0; i < min; i++) {
+            room.setPlayerTeam(specs[i].id, player.team);
+        }
     }
 }
 
@@ -507,6 +527,11 @@ function getDate() {
     return `${mm}/${dd}/${yyyy} at ${hh}:${minu}:${ss}`;
 }
 
+function randomIntFromInterval(min, max) {
+    /* https://stackoverflow.com/a/7228322 */
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 
 let _room = new Room();
 room.onPlayerJoin = (player) => {
@@ -528,3 +553,4 @@ room.onPlayerKicked = (player, message, ban, by) => {
 room.onRoomLink = () => {
     _room.onRoomLink();
 };
+
