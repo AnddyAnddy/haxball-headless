@@ -12,9 +12,11 @@
 // orange  🌿☢️[EFC Futsal] ◻️ Join us !"             "code": "eu", "lat": 48.1371550, "lon": 11.5761250};
 var MAX_PLAYERS = 15;
 
-let geo = {"code": "eu", "lat": 48.1371540, "lon": 11.5761240};
-var room = HBInit({ roomName: "🌿⚫[EFC Futsal] ◻️ New Season 4",
-    playerName: "Phoenix 🦅", maxPlayers: MAX_PLAYERS, public: false, geo });
+let geo = { "code": "eu", "lat": 48.1371540, "lon": 11.5761240 };
+var room = HBInit({
+    roomName: "🌿⚫[EFC Futsal] ◻️ New Season 4",
+    playerName: "Phoenix 🦅", maxPlayers: MAX_PLAYERS, public: false, geo
+});
 
 let first_stadium_loaded = false;
 room.setDefaultStadium("Small");
@@ -65,7 +67,7 @@ class Player {
         this.money = 100;
         this.currentBet = 0;
         this.winPred = 0;
-        this.dreamTeam = {"gk": null, "dm": null, "am": null, "st": null};
+        this.dreamTeam = { "gk": null, "dm": null, "am": null, "st": null };
         this.teamScore = 0;
 
         /*************************************
@@ -88,82 +90,82 @@ class Player {
     }
 
 
-    updateGoals(){
+    updateGoals() {
         if (gameStats.scorers.hasOwnProperty(this.name))
             this.goals += gameStats.scorers[this.name];
     }
-    updateAssists(){
+    updateAssists() {
         if (gameStats.assisters.hasOwnProperty(this.name))
             this.assists += gameStats.assisters[this.name];
     }
-    updateCs(){
+    updateCs() {
         let [team, idteam] = this.team === 1 ? ["blueScore", 1] : ["redScore", 2];
         this.cs += gameStats[team] === 0 &&
             this.name === gameStats.Gks[idteam - 1];
     }
-    updateOG(){
+    updateOG() {
         if (gameStats.ownScorers.hasOwnProperty(this.name))
             this.ownGoals += gameStats.ownScorers[this.name];
     }
-    updatePlayedGk(){
+    updatePlayedGk() {
         this.playedGk += gameStats.Gks.includes(this.name);
     }
-    updateWins(winningTeam){
+    updateWins(winningTeam) {
         this.wins += this.team === winningTeam;
     }
 
-    updateLoses(losingTeam){
+    updateLoses(losingTeam) {
         this.loses += this.team === losingTeam;
     }
-    updateWinRatio(){
+    updateWinRatio() {
         this.winsRatio = ((this.wins / (this.wins + this.loses)) * 100).toFixed(2) || 0;
     }
-    updateGoalsPG(){
+    updateGoalsPG() {
         this.goalsPG = (this.goals / (this.loses + this.wins)).toFixed(2) || 0;
     }
-    updateAssistsPG(){
+    updateAssistsPG() {
         this.assistsPG = (this.assists / (this.loses + this.wins)).toFixed(2) || 0;
     }
-    updateCSPG(){
+    updateCSPG() {
         this.csPG = ((this.cs / this.playedGk) * 100).toFixed(2) || 0;
     }
-    updateCurrentStreak(won){
+    updateCurrentStreak(won) {
         this.currentStreak = won === this.team ? this.currentStreak + 1 : 0;
     }
 
-    updateBestStreak(){
+    updateBestStreak() {
         this.bestStreak = this.currentStreak >= this.bestStreak ?
             this.currentStreak : this.bestStreak;
     }
-    updateSecsPlayed(){
+    updateSecsPlayed() {
         this.secsPlayed += Number(((this.team !== 0) / 60).toFixed(2));
     }
-    updateMinsPlayed(){
+    updateMinsPlayed() {
         this.minsPlayed = Math.floor((this.secsPlayed / 60));
     }
 
-    updatePassAccuracy(){
+    updatePassAccuracy() {
         this.passAcc = ((this.goodPasses / (this.goodPasses + this.badPasses)) * 100).toFixed(2);
     }
-    updateKickedSomeone(){
+    updateKickedSomeone() {
         this.kickedSomeone += this.isTrustedAdmin === 0;
     }
-    updatePassword(m){
+    updatePassword(m) {
         this.pw = m;
     }
-    updateMoney(won){
+    updateMoney(won) {
         let diff = won == this.winPred ? this.currentBet : -1 * this.currentBet;
         this.money += diff;
         this.currentBet = 0;
         this.winPred = 0;
     }
-    disconnect(){
+    disconnect() {
         this.logged = 0;
         this.isTrustedAdmin = 0;
         this.price = 0;
     }
 
-    statsToString(){
+    statsToString() {
         this.statsString1 = " | Goals: " + this.goals + " | Assists: " + this.assists +
             " | Own goals: " + this.ownGoals + " | cs: " + this.cs +
             " | Wins: " + this.wins + " | Losses: " + this.loses;
@@ -176,14 +178,14 @@ class Player {
             " | csPG %: " + this.csPG + " | Best streak: " + this.bestStreak +
             " | Mins: " + this.minsPlayed + "| EFCOINS: " + this.money;
     }
-    displayStats(query_id){
+    displayStats(query_id) {
         this.statsToString();
         room.sendChat(this.statsString1, query_id);
         room.sendChat(this.statsString2, query_id);
         room.sendChat(this.statsString3, query_id);
         this.statsString1 = this.statsString2 = this.statsString3 = "";
     }
-    updateEGStats(){
+    updateEGStats() {
         let winners = gameStats.redScore > gameStats.blueScore ? 1 : 2;
         let losers = 1 + (winners === 1);
         this.updateGoals();
@@ -224,49 +226,49 @@ class GameStats {
         this.hasStarted = false;
         this.rec = false;
     }
-    updateScore(team){
+    updateScore(team) {
         this.redScore += team === 1;
         this.blueScore += team === 2;
     }
 
-    updateGK(){
+    updateGK() {
         var players = room.getPlayerList();
         var min = players[0];
-        min.position = {x: room.getBallPosition().x + 60};
+        min.position = { x: room.getBallPosition().x + 60 };
         var max = min;
 
         for (var i = 1; i < players.length; i++) {
-            if (players[i].position !== null){
+            if (players[i].position !== null) {
                 if (min.position.x > players[i].position.x) min = players[i];
                 if (max.position.x < players[i].position.x) max = players[i];
             }
         }
         this.Gks = [min.name, max.name];
     }
-    updateScorers(p, team){
+    updateScorers(p, team) {
         if (p !== undefined && p.team === team) updateObject(this.scorers, p);
     }
-    updateAssisters(p, team){
+    updateAssisters(p, team) {
         if (p !== undefined && p.team === team) updateObject(this.assisters, p);
     }
-    updateOwnScorers(p, team){
+    updateOwnScorers(p, team) {
         if (p.team !== team) updateObject(this.ownScorers, p);
     }
 
-    updateRedTeam(){
+    updateRedTeam() {
         this.redTeam = room.getPlayerList().filter(player => player.team === 1);
     }
-    updateBlueTeam(){
+    updateBlueTeam() {
         this.blueTeam = room.getPlayerList().filter(player => player.team === 2);
     }
-    updateOvertime(){
+    updateOvertime() {
         this.isOvertime = true;
     }
-    sumMatch(p){
+    sumMatch(p) {
         if (lastMatchSumUp.length === 0) return;
         let last_match = lastMatchSumUp.length - 1;
         let last_match_length = lastMatchSumUp[last_match].length;
-        for (var i = 0; i < last_match_length; i++){
+        for (var i = 0; i < last_match_length; i++) {
             room.sendChat(lastMatchSumUp[last_match][i], p.id);
         }
     }
@@ -281,17 +283,17 @@ class GameControl {
         this.triggerDistance = this.radiusBall + 15 + 0.1;
         this.currentBallOwner = "";
         this.lastBallOwners = ["", ""]; /* [name: name] */
-        this.passesInARow = {"red": 0, "blue": 0}; /* {team: max} */
+        this.passesInARow = { "red": 0, "blue": 0 }; /* {team: max} */
         this.maxPassesInARow = 0;
         this.redPoss = 0;
         this.bluePoss = 0;
         this.smth = "";
     }
-    resetBallOwner(){
+    resetBallOwner() {
         this.currentBallOwner = "";
         this.lastBallOwners = ["", ""];
     }
-    updateBallOwner(){
+    updateBallOwner() {
         var ballPosition = room.getBallPosition();
         var players = room.getPlayerList();
         var distanceToBall;
@@ -304,27 +306,27 @@ class GameControl {
             }
         }
     }
-    updateLastBallOwners(){
+    updateLastBallOwners() {
         if (this.currentBallOwner !== "" &&
-            this.currentBallOwner !== this.lastBallOwners[0]){
+            this.currentBallOwner !== this.lastBallOwners[0]) {
 
             this.lastBallOwners[1] = this.lastBallOwners[0];
             this.lastBallOwners[0] = this.currentBallOwner; // last player who touched the ball
         }
     }
-    updatePassesInARow(){
+    updatePassesInARow() {
         if (gameStats.redTeam.length !== gameStats.blueTeam.length ||
             gameStats.redTeam.length < 2) return;
 
-        if (this.lastBallOwners[1] !== "" && this.smth !== this.currentBallOwner){
+        if (this.lastBallOwners[1] !== "" && this.smth !== this.currentBallOwner) {
 
             if (Stats[this.lastBallOwners[0]].team ===
-                Stats[this.lastBallOwners[1]].team){
+                Stats[this.lastBallOwners[1]].team) {
 
                 Stats[this.lastBallOwners[1]].goodPasses++;
 
 
-                if (Stats[this.lastBallOwners[0]].team === 1){
+                if (Stats[this.lastBallOwners[0]].team === 1) {
                     this.passesInARow.red += 1;
                     this.updateMaxPassesInARow("blue");
                     this.passesInARow.blue = 0;
@@ -343,7 +345,7 @@ class GameControl {
             this.smth = this.currentBallOwner;
         }
     }
-    updateMaxPassesInARow(team){
+    updateMaxPassesInARow(team) {
         this.maxPassesInARow = this.passesInARow[team] > this.maxPassesInARow ?
             this.passesInARow[team] : this.maxPassesInARow;
     }
@@ -358,7 +360,7 @@ class Records {
         this.fastestWin = 0;
         this.longestMatch = 0;
     }
-    updateBestPassesInARow(){
+    updateBestPassesInARow() {
         this.bestPassesInARow = this.maxPassesInARow > this.bestPassesInARow ?
             this.passesInARow : this.bestPassesInARow;
 
@@ -374,31 +376,31 @@ class ELO {
         this.redRating = 0;
         this.blueRating = 0;
     }
-    getAverageRank(team){
+    getAverageRank(team) {
         let average = 0;
         for (var i = 0; i < team.length; i++) {
             average += Stats[team[i].name].elo;
         }
         return average / team.length;
     }
-    updateTeamAverages(){
+    updateTeamAverages() {
         this.redAverage = this.getAverageRank(gameStats.redTeam);
         this.blueAverage = this.getAverageRank(gameStats.blueTeam);
     }
-    updateChancesToWin(){
-        this.redChanceToWin = 1 / ( 1 + Math.pow(10, (this.blueAverage - this.redAverage) / 400));
-        this.blueChanceToWin = 1 / ( 1 + Math.pow(10, (this.redAverage - this.blueAverage) / 400));
+    updateChancesToWin() {
+        this.redChanceToWin = 1 / (1 + Math.pow(10, (this.blueAverage - this.redAverage) / 400));
+        this.blueChanceToWin = 1 / (1 + Math.pow(10, (this.redAverage - this.blueAverage) / 400));
     }
-    updateRating(rwin, bwin){
+    updateRating(rwin, bwin) {
         this.redRating = Math.round(32 * (rwin - this.redChanceToWin));
         this.blueRating = Math.round(32 * (bwin - this.blueChanceToWin));
     }
-    handleEloCalc(){
+    handleEloCalc() {
         this.updateTeamAverages();
         this.updateChancesToWin();
     }
-    updateElo(){
-        if (gameStats.redTeam.length === gameStats.blueTeam.length){
+    updateElo() {
+        if (gameStats.redTeam.length === gameStats.blueTeam.length) {
             let winners = gameStats.redScore > gameStats.blueScore;
             let pr, pb;
             this.updateRating(winners, !winners);
@@ -437,451 +439,32 @@ var roomAdminsAuth = {
 
 };
 
-function banConn(player){
-    if (player.conn === "38342E3137342E3232382E313734") { // Zed.
-    room.kickPlayer(player.id, "Zed. is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "39342E322E35392E3432") { // Madness
-    room.kickPlayer(player.id, "Madness is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "3130392E39302E3233322E323331") { // Tsubasa
-    room.kickPlayer(player.id, "Tsubasa is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "39322E3233382E38332E3930") { // Kernoa
-    room.kickPlayer(player.id, "Kernoa is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "37372E3130302E39362E323137") { // Kl
-    room.kickPlayer(player.id, "Kl is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "3231332E3132372E382E3134") { // Lyreco
-    room.kickPlayer(player.id, "Lyreco is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "38332E38332E33352E313032") { // 24
-    room.kickPlayer(player.id, "24 is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "37382E36312E3131372E3532") { // Killer
-    room.kickPlayer(player.id, "Killer is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "3137362E3134392E37362E313537") { // Killer
-    room.kickPlayer(player.id, "Killer is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "37392E382E3132362E323238") { // Sicko
-    room.kickPlayer(player.id, "Sicko is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "38302E3138392E3232382E313939") { // Sicko
-    room.kickPlayer(player.id, "Sicko is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "38342E38372E3133312E313533") { // Aomine
-    room.kickPlayer(player.id, "Aomine is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "38392E39392E34312E3635") { // Le7
-    room.kickPlayer(player.id, "Le7 is permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " has been banned permanently by the bot")
-    }
-    if (player.conn === "3136332E3135382E3135392E313231") { // Kernoa
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Kernoa) has been banned permanently by the bot")
-    }
-    if (player.conn === "38342E32372E3130352E3135") { // Tarik
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Tarik) has been banned permanently by the bot")
-    }
-    if (player.conn === "3137362E3137302E31382E323331") { // Fury
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Fury) has been banned permanently by the bot")
-    }
-    if (player.conn === "39332E302E39302E313337") { // Rosa
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Rosa) has been banned permanently by the bot")
-    }
-    if (player.conn === "3137362E3132362E38352E3132") { // Le7
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Le7) has been banned permanently by the bot")
-    }
-    if (player.conn === "39302E3131322E32372E313634") { // Sativa
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Sativa) has been banned permanently by the bot")
-    }
-    if (player.conn === "3231372E32352E31372E323030") { // HD
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (HD) has been banned permanently by the bot")
-    }
-    if (player.conn === "3138382E3235332E3233372E313731") { // HD
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (HD) has been banned permanently by the bot")
-    }
-    if (player.conn === "3130352E3130342E3132312E313432") { // Dopped
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Dopped) has been banned permanently by the bot")
-    }
-    if (player.conn === "37372E32312E3138372E313631") { // Misuki
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Heist) has been banned permanently by the bot")
-    }
-    if (player.conn === "37372E32312E3138392E313031") { // Heist
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Heist) has been banned permanently by the bot")
-    }
-    if (player.conn === "37372E3233392E38382E3736") { // Maestro
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Maestro) has been banned permanently by the bot")
-    }
-    if (player.conn === "3130352E3130342E3132352E3335") { // xSha
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (xSha) has been banned permanently by the bot")
-    }
-    if (player.conn === "3139332E3234382E3134332E3635") { // Fury
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Fury) has been banned permanently by the bot")
-    }
-    if (player.conn === "39302E3235342E34332E323331") { // July4th
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (July4th) has been banned permanently by the bot")
-    }
-    if (player.conn === "37372E3133362E3139382E3238") { // Mila
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Mila) has been banned permanently by the bot")
-    }
-    if (player.conn === "33312E3232332E3133302E313633") { // Kyuashu
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Kyuashu) has been banned permanently by the bot")
-    }
-    if (player.conn === "3130392E32382E3138322E313732") { // Dindane
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Dindane) has been banned permanently by the bot")
-    }
-    if (player.conn === "33312E3232332E3133302E313833") { // Kyuashu
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Kyuashu) has been banned permanently by the bot")
-    }
-    if (player.conn === "38332E35392E3132342E313631") { // Ddoser
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Ddoser) has been banned permanently by the bot")
-    }
-    if (player.conn === "39332E372E37312E313933") { // Pub ddoser 2
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Ddoser) has been banned permanently by the bot")
-    }
-    if (player.conn === "3137362E3135382E3137362E323436") { // Isaac
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Isaac) has been banned permanently by the bot")
-    }
-    if (player.conn === "38372E3131362E3137392E3836") { // mebej
-    room.kickPlayer(player.id, "You are permanently banned", true);
-    console.log("🔴🔴🔴" + player.name + " (Mebej) has been banned permanently by the bot")
-    }
-
-
-}
-
-function lastPlace (){
+function lastPlace() {
     var players = room.getPlayerList();
-    if ( players.length == 15 )
+    if (players.length == 15)
         room.setPassword("efc2040");
 
-    if (players.length < 15 )
+    if (players.length < 15)
         room.setPassword();
 
 }
 
-function kickFakeAdmin (player){
+function kickFakeAdmin(player) {
     if (player.name === "Mona" && player.auth != "Et576Ip_llwpLQe7PAq-0x-Ont8-slyZM4wlbeCVcBg") {
-    room.kickPlayer(player.id, "Fake! There is only one Mona", true);
+        room.kickPlayer(player.id, "Fake! There is only one Mona", true);
     }
     if (player.name === "Kang" && player.auth != "FD7dcGdmO0W4TdrP7T6m57xzcFtoDl05MOu5sxHdwx0") {
-    room.kickPlayer(player.id, "Fake! There is only one Kang", true);
+        room.kickPlayer(player.id, "Fake! There is only one Kang", true);
     }
 
 }
 
-function doubleSpace(player){
-thename = player.name
-    if (thename.includes("  ")){
-    room.kickPlayer(player.id,"Take the spaces off your nickname", false);
-    console.log("🚫🚫🚫 " + player.name + " has been kicked for double space in his name");
+function doubleSpace(player) {
+    thename = player.name
+    if (thename.includes("  ")) {
+        room.kickPlayer(player.id, "Take the spaces off your nickname", false);
+        console.log("🚫🚫🚫 " + player.name + " has been kicked for double space in his name");
     }
-}
-
-
-
-function kickWord(p, m){
-    if (m.includes("nigga")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("nigger")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("nibba")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("niga")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("gay")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("gaay")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-     if (m.includes("gaaay")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("rape")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("raped")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("rapist")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("cunt")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("Cunt")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("your mom")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("you mom")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("your sister")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("your dad")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("fuck your")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("you fucking")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("coon")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("Coon")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("cooon")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("  pute")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes(" pute")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("la pute")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("fdp")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("FDP")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("raping")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("fils de")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("f d p")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("Fdp")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("nique ta")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("niquer ta")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("salope")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("baise ta")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("ta mère")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-     if (m.includes("ta mere")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-     if (m.includes("Pute")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("pute ")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes(" PUTE")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("puute")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("negro")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("negre")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("nègre")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-    if (m.includes("ta soeur")){
-    room.kickPlayer(p.id,"We don't tolerate that here", false);
-    Stats[p.name].isMuted = 1;
-    Stats[p.name].kickedSomeone = 0;
-    console.log("🚫🚫🚫 " + p.name + " has been kicked and muted for bad word");
-    }
-
 }
 
 
@@ -900,14 +483,14 @@ function updateTeams(player) { // update the players' list and all the teams' li
     teamSpec = players.filter(player => player.team === 0);
 }
 
-  var Team = {
+var Team = {
     SPECTATORS: 0,
     RED: 1,
     BLUE: 2
 };
 
-function chooseNumberRed(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseNumberRed(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) {
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) {
                 if (!Number.isNaN(Number.parseInt(message[0]))) {
@@ -925,8 +508,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseNumberBlue(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseNumberBlue(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) {
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) {
                 if (!Number.isNaN(Number.parseInt(message[0]))) {
@@ -947,7 +530,7 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
 
 
 
-function startBig(){
+function startBig() {
     if (teamRed.length === 4 && teamBlue.length === 4) {
         room.setCustomStadium(maps.big);
         room.startGame();
@@ -969,7 +552,7 @@ function startBig(){
     }
 }
 
-function loadFirstMap(){
+function loadFirstMap() {
     var players = room.getPlayerList();
     if (players.length < 6) {
         room.setCustomStadium(maps.small);
@@ -980,8 +563,8 @@ function loadFirstMap(){
 var redCaptainChoice = "";
 var blueCaptainChoice = "";
 
-function chooseTopRed(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseTopRed(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "top") {
@@ -994,8 +577,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseTopBlue(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseTopBlue(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "top") {
@@ -1008,8 +591,8 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
     }
 }
 
-function chooseTopRed2(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseTopRed2(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "Top") {
@@ -1022,8 +605,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseTopBlue2(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseTopBlue2(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "Top") {
@@ -1036,8 +619,8 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
     }
 }
 
-function chooseTopRed3(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseTopRed3(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "TOP") {
@@ -1050,8 +633,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseTopBlue3(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseTopBlue3(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "TOP") {
@@ -1068,8 +651,8 @@ function getRandomInt2(max) { // returns a random number from 0 to max-1
     return Math.floor(Math.random() * Math.floor(3));
 }
 
-function chooseAutoRed(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseAutoRed(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "auto") {
@@ -1083,8 +666,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseAutoBlue(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseAutoBlue(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "auto") {
@@ -1098,8 +681,8 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
     }
 }
 
-function chooseAutoRed2(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseAutoRed2(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "Auto") {
@@ -1113,8 +696,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseAutoBlue2(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseAutoBlue2(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "Auto") {
@@ -1128,8 +711,8 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
     }
 }
 
-function chooseAutoRed3(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseAutoRed3(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "random") {
@@ -1143,8 +726,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseAutoBlue3(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseAutoBlue3(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "random") {
@@ -1158,8 +741,8 @@ if (teamBlue.length !== 0 && teamRed.length !== 0) {
     }
 }
 
-function chooseAutoRed4(player, message){
-if (teamRed.length !== 0 && teamBlue.length !== 0) {
+function chooseAutoRed4(player, message) {
+    if (teamRed.length !== 0 && teamBlue.length !== 0) {
         if (player.id == teamRed[0].id || player.id == teamBlue[0].id) { // we care if it's one of the captains choosing
             if (teamRed.length <= teamBlue.length && player.id == teamRed[0].id) { // we care if it's red turn && red cap talking
                 if (message === "rand") {
@@ -1173,8 +756,8 @@ if (teamRed.length !== 0 && teamBlue.length !== 0) {
     }
 }
 
-function chooseAutoBlue4(player, message){
-if (teamBlue.length !== 0 && teamRed.length !== 0) {
+function chooseAutoBlue4(player, message) {
+    if (teamBlue.length !== 0 && teamRed.length !== 0) {
         if (player.id == teamBlue[0].id || player.id == teamRed[0].id) { // we care if it's one of the captains choosing
             if (teamBlue.length <= teamRed.length && player.id == teamBlue[0].id) { // we care if it's red turn && red cap talking
                 if (message === "rand") {
@@ -1205,12 +788,12 @@ function moveSpec(winners) {
         var specs = getSpectators();
         if (specs.length != 0)
             room.setPlayerTeam(specs[0].id, 2); //moving top spec to blue team
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-        } else if (winners == "blue") {
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+    } else if (winners == "blue") {
         var reds = getRedTeam();
         reds.reverse(); //reverse order of putting specs
         var i;
@@ -1221,11 +804,11 @@ function moveSpec(winners) {
         var specs = getSpectators();
         if (specs.length != 0)
             room.setPlayerTeam(specs[0].id, 1); //moving top spec to red team
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
-            room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
+        room.sendChat("🚨CHOOSE🚨 Hey " + specs[0].name + " ! Type a player's position(1 ,2 ,3 ,4) or use top, auto ! 🚨CHOOSE🚨", specs[0].id);
     }
 }
 
@@ -1238,7 +821,7 @@ function getBlueTeam() {
 //returns list of players in red team
 function getRedTeam() {
     var redTeam = room.getPlayerList().filter((player) => player.team == 1);
-    return redTeam  ;
+    return redTeam;
 }
 
 //returns list of players in spectators
@@ -1249,7 +832,7 @@ function getSpectators() {
 
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+    return Math.floor(Math.random() * Math.floor(max));
 }
 
 
@@ -1262,14 +845,14 @@ function updateAdmins() {
     if (players.length == 0 || admins.length == 0 || players.length - admins.length >= 2) return;
     let select = adminSelect[getRandomInt(adminSelect.length - 1)];
 
-    admins.sort(function(a, b){
+    admins.sort(function (a, b) {
         return Stats[b.name][select] - Stats[a.name][select];
     });
     room.setPlayerAdmin(admins[0].id, true);
 
 }
 
-function updateSelectedAdmins(){
+function updateSelectedAdmins() {
     var players = room.getPlayerList().filter((p) => p.id != 0 && p.admin === true);
     for (var i = 0; i < players.length; i++) {
         room.setPlayerAdmin(players[i].id,
@@ -1278,8 +861,8 @@ function updateSelectedAdmins(){
 }
 
 
-function superAdmin(p){
-    if (headAdminsAuths.hasOwnProperty(Stats[p.name].auth)){
+function superAdmin(p) {
+    if (headAdminsAuths.hasOwnProperty(Stats[p.name].auth)) {
         var players = room.getPlayerList().filter((p) => p.admin === true);
         for (var i = 0; i < players.length; i++) {
             room.setPlayerAdmin(players[i].id,
@@ -1292,8 +875,8 @@ function superAdmin(p){
     return false;
 }
 
-function getAdmin(p, m){
-    if (roomAdminsAuth.hasOwnProperty(Stats[p.name].auth)){
+function getAdmin(p, m) {
+    if (roomAdminsAuth.hasOwnProperty(Stats[p.name].auth)) {
         room.setPlayerAdmin(p.id, true);
         Stats[p.name].isTrustedAdmin = 1;
         room.sendChat("You got level 1 admin ! ", p.id);
@@ -1301,8 +884,8 @@ function getAdmin(p, m){
     return false;
 }
 
-function getAdmin2(p, m){
-    if (headAdminsAuths.hasOwnProperty(Stats[p.name].auth)){
+function getAdmin2(p, m) {
+    if (headAdminsAuths.hasOwnProperty(Stats[p.name].auth)) {
         room.setPlayerAdmin(p.id, true);
         Stats[p.name].isTrustedAdmin = 2;
         room.sendChat("You got level 2 admin ! ", p.id);
@@ -1310,8 +893,8 @@ function getAdmin2(p, m){
     return false;
 }
 
-function addAdmin(p, m){
-    if (Stats[p.name].isTrustedAdmin >= 2){
+function addAdmin(p, m) {
+    if (Stats[p.name].isTrustedAdmin >= 2) {
         m = m.substr("!addadmin".length + 1);
         roomAdminsAuth[Stats[m].auth] = m;
         room.sendChat("Succes.", p.id);
@@ -1343,9 +926,9 @@ const KICK_MESSAGE_SPAM = "Spam/Chat Pollution";
 * in chat has previously written.
 ***************************************************************/
 
-function checkSpam(lastWriters, p){
+function checkSpam(lastWriters, p) {
     let c = 0;
-    for (var i = 0; i < lastWriters.length; i++){
+    for (var i = 0; i < lastWriters.length; i++) {
         c += lastWriters[i] === p.id;
     }
     return c;
@@ -1355,7 +938,7 @@ function checkSpam(lastWriters, p){
 * Function updating the array by deleting the first element
 * and adding the last player who talked.
 ***************************************************************/
-function updateLastWriters(lastWriters, p){
+function updateLastWriters(lastWriters, p) {
     lastWriters.splice(0, 1);
     lastWriters.push(p.id);
 
@@ -1370,12 +953,12 @@ function updateLastWriters(lastWriters, p){
 ***************************************************************/
 
 
-function handleSpam(lastWriters, p){
-    if (lastWriters.length === MAX_CHAT_IN_A_ROW){
+function handleSpam(lastWriters, p) {
+    if (lastWriters.length === MAX_CHAT_IN_A_ROW) {
         updateLastWriters(lastWriters, p);
         let res = checkSpam(lastWriters, p);
 
-        if (res === MAX_CHAT_IN_A_ROW){
+        if (res === MAX_CHAT_IN_A_ROW) {
             Stats[p.name].isMuted = 1;
             room.sendChat("🔇🔇🔇 You have been muted for Spam or Chat pollution!", p.id);
             console.log("🔇🔇🔇 " + p.name + " has been muted for Spam or Chat pollution");
@@ -1397,11 +980,11 @@ function handleSpam(lastWriters, p){
 ***************************************************************/
 
 
-function swap(player){
-    if (player === undefined || player.admin){
+function swap(player) {
+    if (player === undefined || player.admin) {
         var p = room.getPlayerList().filter((player) => player.id != 0);
-        for (let i = 0; i < p.length; i++){
-            if (p[i].team !== 0){
+        for (let i = 0; i < p.length; i++) {
+            if (p[i].team !== 0) {
                 room.setPlayerTeam(p[i].id, 1 + (p[i].team === 1));
             }
         }
@@ -1417,12 +1000,12 @@ function swap(player){
 * Global variable used: None.
 ***************************************************************/
 
-function sendPM(p, m){
-    if (m.startsWith("@") === true){
+function sendPM(p, m) {
+    if (m.startsWith("@") === true) {
         let spacePos = m.search(" ");
-        let name = m.substr(1, spacePos !== -1 ? spacePos - 1: m.length);
+        let name = m.substr(1, spacePos !== -1 ? spacePos - 1 : m.length);
         let dest = room.getPlayerList().filter((p) => p.name === name);
-        if (dest.length !== 0){
+        if (dest.length !== 0) {
             m = m.substr(spacePos, m.length);
             room.sendChat("PM from " + p.name + ": " + m, dest[0].id);
         }
@@ -1441,25 +1024,25 @@ function sendPM(p, m){
 * Global variables used: None
 ***************************************************************/
 
-function reset(p){
-    if (p === undefined || p.admin === true){
+function reset(p) {
+    if (p === undefined || p.admin === true) {
         room.stopGame();
         room.startGame();
     }
 }
 
-function resetWithSwap(p){
-    if (p === undefined || p.admin === true){
+function resetWithSwap(p) {
+    if (p === undefined || p.admin === true) {
         room.stopGame();
         swap();
         room.startGame();
     }
 }
-function resetWithTop(p){
-    if (p === undefined || p.admin === true){
+function resetWithTop(p) {
+    if (p === undefined || p.admin === true) {
         room.stopGame();
         let specs = room.getPlayerList().filter((p) => p.id !== 0 && p.team === 0);
-        if (specs.length !== 0){
+        if (specs.length !== 0) {
             room.setPlayerTeam(specs[0], p.team === 1 ? 2 : 1);
         }
         room.startGame();
@@ -1477,25 +1060,25 @@ function resetWithTop(p){
 var Stats = {};
 const saveStatsName = "Players_stats";
 var saveStatsN = 0;
-function loadStats(){
-    if (localStorage.getItem(saveStatsName + saveStatsN)){
+function loadStats() {
+    if (localStorage.getItem(saveStatsName + saveStatsN)) {
         let all = JSON.parse(localStorage.getItem(saveStatsName + saveStatsN));
         let noms = Object.keys(all);
-        for (let i = 0; i < noms.length; i++){
-        	Stats[noms[i]] = new Player(noms[i]);
-        	Object.assign(Stats[noms[i]], all[noms[i]]);
+        for (let i = 0; i < noms.length; i++) {
+            Stats[noms[i]] = new Player(noms[i]);
+            Object.assign(Stats[noms[i]], all[noms[i]]);
         }
     }
 }
 
 
-function saveStatsFun(){
+function saveStatsFun() {
     var val = JSON.stringify(Stats);
     window.localStorage.setItem(saveStatsName + saveStatsN, val);
 }
 
 
-function deleteStatsFun(){
+function deleteStatsFun() {
     saveStatsN++;
     Stats = {};
 }
@@ -1506,17 +1089,17 @@ function deleteStatsFun(){
 * never been to the room.
 * Also logs him and get his current id.
 ***************************************************************/
-function autoConnect(p){
-    if (Stats.hasOwnProperty(p.name) === false){
+function autoConnect(p) {
+    if (Stats.hasOwnProperty(p.name) === false) {
         Stats[p.name] = new Player(p.name);
         Stats[p.name].auth = p.auth;
     }
     else {
-        if (Stats[p.name].auth != 0 && p.auth !== Stats[p.name].auth){
+        if (Stats[p.name].auth != 0 && p.auth !== Stats[p.name].auth) {
             Stats[p.name].price = 1;
             room.sendChat("Your stats won't count because this nick is already taken by someone with a different id", p.id);
         }
-        else if (Stats[p.name].auth == 0){
+        else if (Stats[p.name].auth == 0) {
             Stats[p.name].auth = p.auth;
         }
     }
@@ -1527,9 +1110,9 @@ function autoConnect(p){
 
 
 
-function stats(p, m){
+function stats(p, m) {
     m = m.substr("!stats".length + 1);
-    if (Stats.hasOwnProperty(m)){
+    if (Stats.hasOwnProperty(m)) {
         Stats[m].displayStats(p.id);
     }
     else {
@@ -1560,7 +1143,7 @@ var msg_to_command = {
 
 
 
-function bestRanks(message){
+function bestRanks(message) {
     if (!msg_to_command.hasOwnProperty(message))
         return "This option does not exist (yet ?), sorry :(. See !rankhelp to further infos.";
 
@@ -1575,20 +1158,20 @@ function bestRanks(message){
         if (score === 1000 || score === 0 ||
             (Stats[names[i]].wins + Stats[names[i]].loses) < 10) continue;
 
-        overall.push({name: names[i], value: score});
+        overall.push({ name: names[i], value: score });
     }
-    overall.sort(function(a,b){
+    overall.sort(function (a, b) {
         return b.value - a.value;
     });
     for (i = 0; i < overall.length; i++) {
-		string += i + 1 + ") " + overall[i].name + ": " + overall[i].value + " | ";
-	}
-	return string;
+        string += i + 1 + ") " + overall[i].name + ": " + overall[i].value + " | ";
+    }
+    return string;
 }
 
 
 
-function ranking(p, m){
+function ranking(p, m) {
     let string = bestRanks(m.substr("!rank".length + 1));
     let line1 = string.substring(0, 120);
     let line2 = string.substring(120, 240);
@@ -1605,7 +1188,7 @@ function ranking(p, m){
 * (the disconnect thing is pretty useless since it is caught
 * in the onPlayerLeave anyway).
 ***************************************************************/
-function bb(p){
+function bb(p) {
     Stats[p.name].disconnect();
     room.kickPlayer(p.id, "rip !", false);
 }
@@ -1615,42 +1198,42 @@ function bb(p){
 * ************************** MUTE ****************************
 * Global variable used: None
 ***************************************************************/
-function mute(p, m){
-	if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function mute(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         m = m.substr("!mute".length + 1);
-		if (Stats.hasOwnProperty(m)) {
+        if (Stats.hasOwnProperty(m)) {
             Stats[m].isMuted = 1;
             room.sendChat(m + " has been muted by " + p.name);
         }
-	}
+    }
     return false;
 }
 
-function muteById(p, m){
+function muteById(p, m) {
     m = idToName(m.substr("!muteid".length + 1));
     return mute(p, "!mute " + m);
 }
 
 
-function unmute(p, m){
-	if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
-		m = m.substr("!unmute".length + 1);
+function unmute(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
+        m = m.substr("!unmute".length + 1);
         if (Stats.hasOwnProperty(m)) {
             Stats[m].isMuted = 0;
             room.sendChat(m + " has been unmuted by " + p.name);
             room.sendChat(m + " has been unmuted by " + p.name, Stats[m].id);
         }
-	}
+    }
     return false;
 }
 
-function unmuteById(p, m){
+function unmuteById(p, m) {
     m = idToName(m.substr("!unmuteid".length + 1));
     return unmute(p, "!unmute " + m);
 }
 
-function muteAll(p, m){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function muteAll(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         var players = room.getPlayerList().filter((pl) => pl.admin === false &&
             pl.team === 0);
         for (var i = 0; i < players.length; i++) {
@@ -1661,8 +1244,8 @@ function muteAll(p, m){
     }
 }
 
-function resetMutes(p){
-    if (p === undefined || p.admin === true){
+function resetMutes(p) {
+    if (p === undefined || p.admin === true) {
         var players = room.getPlayerList();
         for (var i = 1; i < players.length; i++) {
             Stats[players[i].name].isMuted = 0;
@@ -1682,11 +1265,11 @@ function resetMutes(p){
 * Global variables used: None.
 ***************************************************************/
 
-function permaBan(p, m){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 2){
+function permaBan(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 2) {
 
         m = m.substr("!permaban".length + 1);
-        if (Stats.hasOwnProperty(m) === true){
+        if (Stats.hasOwnProperty(m) === true) {
             room.sendChat(m + " has been banned");
             Stats[m].isBanned = true;
             Stats[m].isPermaBanned = 1;
@@ -1701,8 +1284,8 @@ function permaBan(p, m){
 }
 
 
-function idToName(m){
-    if (!isNaN(m)){
+function idToName(m) {
+    if (!isNaN(m)) {
         let player = room.getPlayer(m);
         if (player !== null)
             return player.name;
@@ -1710,14 +1293,14 @@ function idToName(m){
     return m;
 }
 
-function permaBanById(p, m){
+function permaBanById(p, m) {
     m = idToName(m.substr("!permabanid".length + 1));
     return permaBan(p, "!permaban " + m);
 }
 
 
-function unbanAll(player){
-    if (player === undefined || Stats[player.name].isTrustedAdmin >= 1){
+function unbanAll(player) {
+    if (player === undefined || Stats[player.name].isTrustedAdmin >= 1) {
         for (var p in Stats) {
             if (Stats.hasOwnProperty(p) && Stats[p].isBanned === true &&
                 Stats[p].isPermaBanned === 0) {
@@ -1731,10 +1314,10 @@ function unbanAll(player){
     return false;
 }
 
-function unbanPlayer(p, m){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function unbanPlayer(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         m = m.substr("!unban".length + 1);
-        if (Stats.hasOwnProperty(m) === true){
+        if (Stats.hasOwnProperty(m) === true) {
             room.clearBan(Stats[m].id);
             room.sendChat(m + " is free now !", p.id);
             Stats[m].isBanned = 0;
@@ -1746,8 +1329,8 @@ function unbanPlayer(p, m){
 
 var ragequitAuth = {};
 
-function preventPlaying(p){
-    if (Stats[p.name].kickedSomeone > 0 && p.team != 0){
+function preventPlaying(p) {
+    if (Stats[p.name].kickedSomeone > 0 && p.team != 0) {
         room.sendChat("🛑🕒 " + p.name + " must wait " +
             Stats[p.name].kickedSomeone + " more mins to play because he has left his last game before it ends 🕒🛑");
         room.setPlayerTeam(p.id, 0);
@@ -1755,7 +1338,7 @@ function preventPlaying(p){
     }
 }
 
-function decreaseRqTime(){
+function decreaseRqTime() {
     let players = room.getPlayerList().filter((p) => Stats[p.name].kickedSomeone != 0);
     for (var i = 0; i < players.length; i++) {
         Stats[players[i].name].kickedSomeone--;
@@ -1772,30 +1355,30 @@ const conns = {};
 
 
 function forceSameName(player) {
-  const oldName = auths[player.auth] !== undefined ? auths[player.auth] :
-      conns[player.conn] !== undefined ? conns[player.conn] : player.name;
+    const oldName = auths[player.auth] !== undefined ? auths[player.auth] :
+        conns[player.conn] !== undefined ? conns[player.conn] : player.name;
 
-  if (oldName !== player.name) {
-    room.kickPlayer(player.id,
-        `You can change your nickname only tomorrow, use ${oldName}`);
-    console.log("🔐🔐🔐 " + player.name + " has been kicked trying a new nickname");
+    if (oldName !== player.name) {
+        room.kickPlayer(player.id,
+            `You can change your nickname only tomorrow, use ${oldName}`);
+        console.log("🔐🔐🔐 " + player.name + " has been kicked trying a new nickname");
 
-    return false;
-  }
+        return false;
+    }
 
-  auths[player.auth] = player.name;
-  conns[player.conn] = player.name;
+    auths[player.auth] = player.name;
+    conns[player.conn] = player.name;
 }
 
 function onPersistHandler() {
-  return { auths, conns };
+    return { auths, conns };
 }
 
 function onRestoreHandler(data) {
-  if (data === undefined) return;
+    if (data === undefined) return;
 
-  Object.assign(auths, data.auths || {});
-  Object.assign(conns, data.conns || {});
+    Object.assign(auths, data.auths || {});
+    Object.assign(conns, data.conns || {});
 }
 
 
@@ -1811,7 +1394,7 @@ function onRestoreHandler(data) {
 /**************************************************************
 * Function displaying help in 2 lines in pm to the player.
 ***************************************************************/
-function helpFun(p){
+function helpFun(p) {
     var help_string1 = "| !stats [nickname] | !rank [arg] | !rankhelp | !bethelp";
     var help_string2 = "| !bb | !swap | !rr | !rrs | !msup | @nickname pm | !discord | !disp";
     room.sendChat(help_string1, p.id);
@@ -1820,13 +1403,13 @@ function helpFun(p){
 }
 
 
-function rankHelp(p){
+function rankHelp(p) {
     room.sendChat("Type rank + one options among: ", p.id);
     room.sendChat(Object.keys(msg_to_command).join(" | "), p.id);
     return false;
 }
 
-function betHelp(p){
+function betHelp(p) {
     room.sendChat("💰💰 You can win HAXCOINS by betting on a team ! 💰💰", p.id);
     room.sendChat("💰💰 use !betwin [team] [haxcoins], Ex: !betwin r 20 or !betwin b 20 💰💰", p.id);
     room.sendChat("💰💰 You can only bet when a match started and before it reaches 20s. 💰💰", p.id);
@@ -1838,13 +1421,13 @@ function betHelp(p){
 /**************************************************************
 * Function displaying the sum up of the last match in pm.
 ***************************************************************/
-function sumMatchCommand(p){
+function sumMatchCommand(p) {
     gameStats.sumMatch(p);
     return false;
 }
 
 
-function givesDiscord(p){
+function givesDiscord(p) {
     room.sendChat("https://discord.gg/jTn2ZDp", p.id);
 }
 
@@ -1854,9 +1437,9 @@ let display = {
     "mute": ["isMuted", true]
 };
 
-function displayHere(p, m){
+function displayHere(p, m) {
     m = m.substr("!disp".length + 1);
-    if (display.hasOwnProperty(m)){
+    if (display.hasOwnProperty(m)) {
         let players = room.getPlayerList().filter((player) => player.id != 0);
         let string = "PM from Host: ";
         for (var i = 0; i < players.length; i++) {
@@ -1874,9 +1457,9 @@ function displayHere(p, m){
 }
 
 
-function disconnectAll(){
-    for (let e in Stats){
-        if (Stats.hasOwnProperty(e) && Stats[e].logged != 0){
+function disconnectAll() {
+    for (let e in Stats) {
+        if (Stats.hasOwnProperty(e) && Stats[e].logged != 0) {
             Stats[e].logged = 0;
             Stats[e].isTrustedAdmin = 0;
         }
@@ -1885,8 +1468,8 @@ function disconnectAll(){
 
 }
 
-function addPassword(p, m){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function addPassword(p, m) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         m = m.substr("!addpw".length + 1);
         room.setPassword(m);
         room.sendChat(m + " is the new pw of the room", p.id);
@@ -1894,8 +1477,8 @@ function addPassword(p, m){
     return false;
 }
 
-function rmPassword(p){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function rmPassword(p) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         room.setPassword();
         room.sendChat("The password have been cleared", p.id);
     }
@@ -1903,10 +1486,10 @@ function rmPassword(p){
 }
 
 
-function changeMaps(p, m){
-    if (p === undefined || p.admin === true){
+function changeMaps(p, m) {
+    if (p === undefined || p.admin === true) {
         m = m.substr("!map".length + 1);
-        if (maps.hasOwnProperty(m)){
+        if (maps.hasOwnProperty(m)) {
             room.setCustomStadium(maps[m]);
             return false;
         }
@@ -1918,10 +1501,10 @@ function changeMaps(p, m){
 function downloadBlob(fileName) {
     let mimeType = 'application/octet-stream';
     let data = room.stopRecording();
-    let blob = new Blob([data], {type: mimeType});
+    let blob = new Blob([data], { type: mimeType });
     let url = window.URL.createObjectURL(blob);
     downloadURL(url, fileName);
-    setTimeout(function() {
+    setTimeout(function () {
         return window.URL.revokeObjectURL(url);
     }, 1000);
 }
@@ -1936,15 +1519,15 @@ function downloadURL(data, fileName) {
     elem.remove();
 }
 
-function recGameFun(player){
-    if (gameStats.rec === true){
+function recGameFun(player) {
+    if (gameStats.rec === true) {
         room.sendChat("Last game has already been recorded by someone." +
             "Contact us to get a copy of it", player.id);
     }
     else {
         let date = new Date();
         let month = (date.getMonth + 1);
-        let recname = "haxrec_" + date.getDate() + "_"  +
+        let recname = "haxrec_" + date.getDate() + "_" +
             "_" + date.getFullYear() + "_" + date.getHours() + "H" +
             date.getMinutes() + "m.hbr2";
 
@@ -1957,8 +1540,8 @@ function recGameFun(player){
 
 var Alts = {}; //{conn: [name1, ..., nameN]}
 
-function getAlts(p, m){
-    if (roomAdminsAuth.hasOwnProperty(Stats[p.name].auth)){
+function getAlts(p, m) {
+    if (roomAdminsAuth.hasOwnProperty(Stats[p.name].auth)) {
         m = m.substr("!getname".length + 1);
         if (Stats.hasOwnProperty(m))
             room.sendChat("PM from Host: Alts: " + Alts[Stats[m].conn].join(" | "), p.id);
@@ -1966,14 +1549,14 @@ function getAlts(p, m){
     }
 }
 
-function stringBet(p, team, bet, team_msg){
+function stringBet(p, team, bet, team_msg) {
     Stats[p.name].winPred = team;
     Stats[p.name].currentBet = Number(bet);
     room.sendChat("PM from Host: You've bet " + bet + " EFCOINS on " +
-        team_msg +  " team ! ", p.id);
+        team_msg + " team ! ", p.id);
 }
 
-function betOnTeam(p, m){
+function betOnTeam(p, m) {
     m = m.substr("!betwin".length + 1);
     let bet = m.substr(2);
     m = m.substr(0, 1);
@@ -1982,7 +1565,7 @@ function betOnTeam(p, m){
     if (!isNaN(bet) && bet >= 0 && bet <= Stats[p.name].money &&
         Stats[p.name].currentBet === 0 && team.includes(m) &&
         score != null && score.time < 20 && p.team === 0 &&
-        gameStats.redTeam.length >= 3 && gameStats.blueTeam.length >= 3){
+        gameStats.redTeam.length >= 3 && gameStats.blueTeam.length >= 3) {
 
         stringBet(p, 1 * (m == "r") || 1 + (m == "b"), bet, m == "r" ? "red" : "blue");
     }
@@ -1995,11 +1578,11 @@ function betOnTeam(p, m){
 }
 
 
-function checkFake(p, m){
+function checkFake(p, m) {
     m = m.substr("!check".length + 1);
-    if (Stats.hasOwnProperty(m)){
+    if (Stats.hasOwnProperty(m)) {
         m = Stats[m].price ? "❌❌❌ This player is the fake " + Stats[m].name + "." : "✔️✔️✔️ This player is the real " + Stats[m].name + ".";
-        room.sendChat("📡 Authentication...Processing...Done... " + m );
+        room.sendChat("📡 Authentication...Processing...Done... " + m);
     }
 }
 
@@ -2044,7 +1627,7 @@ var commands = {
 };
 
 
-function handleCommands(p, m){
+function handleCommands(p, m) {
     let spacePos = m.search(" ");
     let command = m.substr(0, spacePos !== -1 ? spacePos : m.length);
     if (commands.hasOwnProperty(command) === true) return commands[command](p, m);
@@ -2056,7 +1639,7 @@ function handleCommands(p, m){
 }
 
 
-function handleStart(){
+function handleStart() {
     gameStats.updateRedTeam();
     gameStats.updateBlueTeam();
     handleTeams();
@@ -2067,9 +1650,9 @@ function handleStart(){
 }
 
 
-function handleTimePlayed(){
+function handleTimePlayed() {
     var players = room.getPlayerList();
-    for (var i = 1; i < players.length; i++){
+    for (var i = 1; i < players.length; i++) {
         Stats[players[i].name].updateSecsPlayed();
         Stats[players[i].name].updateMinsPlayed();
     }
@@ -2077,7 +1660,7 @@ function handleTimePlayed(){
 
 
 
-function handleGoals(team){
+function handleGoals(team) {
     var time = room.getScores().time;
     var m = Math.trunc(time / 60);
     var s = Math.trunc(time % 60);
@@ -2093,13 +1676,13 @@ function handleGoals(team){
 
     if (Stats.hasOwnProperty(gameControl.lastBallOwners[1]) &&
         (Stats[gameControl.lastBallOwners[1]].team ===
-        Stats[gameControl.lastBallOwners[0]].team)){
+            Stats[gameControl.lastBallOwners[0]].team)) {
 
         assister = gameControl.lastBallOwners[1];
     }
 
 
-    if (team === Stats[gameControl.currentBallOwner].team){
+    if (team === Stats[gameControl.currentBallOwner].team) {
         string = "⚽ Scorer: " + gameControl.lastBallOwners[0] + "| Assister: " +
             assister + "| at " + time;
         room.sendChat(string);
@@ -2113,38 +1696,38 @@ function handleGoals(team){
 
 }
 
-function handleTeams(){
+function handleTeams() {
     var p = room.getPlayerList();
     for (var i = 1; i < p.length; i++) {
         Stats[p[i].name].team = p[i].team;
     }
 }
 
-function handleGk(){
-    if (gameStats.hasStarted === false){
-        if (room.getScores().time !== 0){
-           gameStats.hasStarted = true;
-           gameStats.updateGK();
-           room.sendChat("Red GK: " + gameStats.Gks[0] + ", Blue GK: " + gameStats.Gks[1]);
-       }
+function handleGk() {
+    if (gameStats.hasStarted === false) {
+        if (room.getScores().time !== 0) {
+            gameStats.hasStarted = true;
+            gameStats.updateGK();
+            room.sendChat("Red GK: " + gameStats.Gks[0] + ", Blue GK: " + gameStats.Gks[1]);
+        }
     }
 }
 
-function handleEndGame(){
+function handleEndGame() {
     var players = room.getPlayerList().filter((p) => p.id != 0);
     records.updateBestPassesInARow();
     elo.updateElo();
-    for (var i = 0; i < players.length; i++){
-        if (Stats[players[i].name].price !== 1){
+    for (var i = 0; i < players.length; i++) {
+        if (Stats[players[i].name].price !== 1) {
             Stats[players[i].name].updateEGStats();
         }
     }
 }
 
-function handleOvertime(){
+function handleOvertime() {
     let scores = room.getScores();
     if (scores !== null && scores.timeLimit !== 0 &&
-        scores.time >= scores.timeLimit){
+        scores.time >= scores.timeLimit) {
 
         handleEndGame();
     }
@@ -2152,9 +1735,9 @@ function handleOvertime(){
 
 
 
-function handleBans2(kicked, message, ban, by){
-    if (by.id !== 0){
-        if (Stats[by.name].isTrustedAdmin === 0){
+function handleBans2(kicked, message, ban, by) {
+    if (by.id !== 0) {
+        if (Stats[by.name].isTrustedAdmin === 0) {
             room.kickPlayer(by.id, "You are not allowed to kick/ban players !", ban);
             room.clearBan(kicked.id);
         }
@@ -2163,11 +1746,11 @@ function handleBans2(kicked, message, ban, by){
 
 
 
-function handleRefresh(p){
+function handleRefresh(p) {
 
 
-    if (Stats.hasOwnProperty(p.name) && Stats[p.name].logged !== 0){
-        if (Stats[p.name].auth === p.auth){
+    if (Stats.hasOwnProperty(p.name) && Stats[p.name].logged !== 0) {
+        if (Stats[p.name].auth === p.auth) {
             room.kickPlayer(Stats[p.name].id, "You just refreshed.", 0);
         }
         else {
@@ -2175,19 +1758,19 @@ function handleRefresh(p){
         }
     }
 }
-function kickDoubleConn(p){
+function kickDoubleConn(p) {
     let players = room.getPlayerList();
     for (var i = 0; i < players.length; i++) {
-        if (Stats[players[i].name].conn === p.conn && Stats[players[i].name].id !== p.id){
+        if (Stats[players[i].name].conn === p.conn && Stats[players[i].name].id !== p.id) {
             room.kickPlayer(p.id, "Multi Accounting", 0);
-            }
+        }
     }
 }
 
 
-function updateSanction(p){
+function updateSanction(p) {
     if (room.getPlayerList().filter((pl) => pl.name === p.name &&
-        pl.team === p.team).length === 0){
+        pl.team === p.team).length === 0) {
 
         let score = gameStats.redScore - gameStats.blueScore;
         Stats[p.name].kickedSomeone += p.team === 1 && score > 0;
@@ -2199,26 +1782,26 @@ function updateSanction(p){
         Stats[p.name].kickedSomeone += 2 * (score === 0);
 
         if (p.team != 0)
-        Stats[p.name].kickedSomeone *= 3;
+            Stats[p.name].kickedSomeone *= 3;
 
 
     }
 
 }
 
-function handleSanction(p){
-    if (room.getScores() != null && p.team !== 0){
+function handleSanction(p) {
+    if (room.getScores() != null && p.team !== 0) {
         setTimeout(updateSanction, 1000 * 120, p);
     }
 }
 
-function leaveInGame(p){
-    if (room.getScores() != null && p.team !== 0){
+function leaveInGame(p) {
+    if (room.getScores() != null && p.team !== 0) {
         room.pauseGame(true);
     }
 }
 
-function handleCSMessage(){
+function handleCSMessage() {
     let str = "";
     if (gameStats.redScore === 0)
         str = [gameStats.Gks[1] + " kept a cs for his team"].join();
@@ -2228,14 +1811,14 @@ function handleCSMessage(){
 }
 
 
-function handleMode(){
+function handleMode() {
     mode = room.getScores().timeLimit === 7;
 }
 
 
 
-function handleAlts(p){
-    if (Alts.hasOwnProperty(p.conn)){
+function handleAlts(p) {
+    if (Alts.hasOwnProperty(p.conn)) {
         if (!Alts[p.conn].includes(p.name))
             Alts[p.conn].push(p.name);
     }
@@ -2244,12 +1827,12 @@ function handleAlts(p){
     }
 }
 
-function handleBans(p){
+function handleBans(p) {
     if (Stats[p.name].isBanned != 0)
         room.kickPlayer(p.id, "You're banned!", 1);
 }
 
-function resetBettings(){
+function resetBettings() {
     let players = room.getPlayerList();
     for (var i = 0; i < players.length; i++) {
         Stats[players[i].name].currentBet = 0;
@@ -2259,9 +1842,9 @@ function resetBettings(){
 }
 
 
-function handleStadiumChange(name, by){
-    if (first_stadium_loaded === true){
-        if (by.id != 0){
+function handleStadiumChange(name, by) {
+    if (first_stadium_loaded === true) {
+        if (by.id != 0) {
             room.kickPlayer(by.id, "Please use !map [stadium] next time !", false);
             room.setCustomStadium(maps.big);
         }
@@ -2269,7 +1852,7 @@ function handleStadiumChange(name, by){
     else first_stadium_loaded = true;
 }
 
-function updateStreak(winners){
+function updateStreak(winners) {
     winStreak.score = (winStreak.team == "red" && winners) ||
         !(winStreak.team == "red" || winners) ? winStreak.score + 1 : 1;
     winStreak.team = winners ? "red" : "blue";
@@ -2279,10 +1862,10 @@ function updateStreak(winners){
 }
 
 
-function banall(p){
-    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1){
+function banall(p) {
+    if (p === undefined || Stats[p.name].isTrustedAdmin >= 1) {
         let players = room.getPlayerList().filter((p) => p.id != 0);
-        if (players.length != 0){
+        if (players.length != 0) {
             for (var i = 0; i < players.length; i++) {
                 room.kickPlayer(players[i].id, "Be active next time :-)", 0);
             }
@@ -2291,33 +1874,33 @@ function banall(p){
     return false;
 }
 
-function checkfdps(){
-    if (active.length == 0 && room.getPlayerList().length >= 6){
+function checkfdps() {
+    if (active.length == 0 && room.getPlayerList().length >= 6) {
         banall();
     }
     active = [];
 }
 
 
-function getBestRanks(){
+function getBestRanks() {
     let string;
     for (var rank in msg_to_command) {
-        if (msg_to_command.hasOwnProperty(rank)){
+        if (msg_to_command.hasOwnProperty(rank)) {
             string = bestRanks(rank);
             console.log(rank + ": " + string.substring(0, 400));
         }
     }
 }
 
-function resetAuth(name){
+function resetAuth(name) {
     if (Stats.hasOwnProperty(name))
         Stats[name].auth = 0;
 }
 
-function kickLastPlayer(p){
-    if (room.getPlayerList().length === (MAX_PLAYERS +1) &&
+function kickLastPlayer(p) {
+    if (room.getPlayerList().length === (MAX_PLAYERS + 1) &&
         !roomAdminsAuth.hasOwnProperty(p.auth) &&
-        !headAdminsAuths.hasOwnProperty(p.auth)){
+        !headAdminsAuths.hasOwnProperty(p.auth)) {
 
         room.kickPlayer(p.id, "Sorry, this last slot is reserved for EFC staff !", 0);
 
@@ -2325,23 +1908,23 @@ function kickLastPlayer(p){
 }
 
 
-function putTeamColor(){
+function putTeamColor() {
     room.setTeamColors(1, 45, 0xFFA41C, [0x7A1602, 0x7A1602, 0x571002]);
     room.setTeamColors(2, 135, 0xFFA41C, [0x1A164A, 0x1A164A, 0x110E30]);
 }
 
-function spamcolors(team, color){
+function spamcolors(team, color) {
     room.setTeamColors(team, 45, color, [color, color, color]);
 }
 
 
-function warn4def(team){
+function warn4def(team) {
 
     room.sendChat("🚫🛑 4 DEFENSE IS FORBIDDEN. PLEASE ONE LEAVE THE AREA 🛑🚫");
     spamcolors(team, 0xFFA41C);
 }
 
-function check4def(){
+function check4def() {
     if (room.getScores() == null) return;
     let red4def = room.getPlayerList().filter((p) =>
         p.team == 1 && p.position.x < -401).length;
@@ -2349,7 +1932,7 @@ function check4def(){
     let blue4def = room.getPlayerList().filter((p) =>
         p.team == 2 && p.position.x > 401).length;
 
-    if (red4def == 4 || blue4def == 4){
+    if (red4def == 4 || blue4def == 4) {
         warn4def(1 + (blue4def == 4));
     }
     else putTeamColor();
@@ -2362,8 +1945,8 @@ var captainsCommands = {
     "rand": putRandomToPlayerTeam,
 };
 
-function handleCaptaincy(p, m){
-    if (isAllowedToPick(p)){
+function handleCaptaincy(p, m) {
+    if (isAllowedToPick(p)) {
         if (captainsCommands.hasOwnProperty(m.toLowerCase()))
             captainsCommands[m](p);
 
@@ -2376,37 +1959,37 @@ function handleCaptaincy(p, m){
     }
 }
 
-function isAllowedToPick(p){
+function isAllowedToPick(p) {
     return room.getScores() == null &&
         p.team == (1 + (gameStats.redScore > gameStats.blueScore));
 }
 
 
-function putTopToPlayerTeam(p){
+function putTopToPlayerTeam(p) {
     let numberOfSpecs = room.getPlayerList().filter((a) => a.team == 0 && a.id != 0).length;
     let numberOfPlayersInMyTeam = room.getPlayerList().filter((a) => a.team == p.team).length;
-    let numberOfPlayersNotInMyTeam = room.getPlayerList().filter((a) => a.team != p.team && a.team != 0).length ;
+    let numberOfPlayersNotInMyTeam = room.getPlayerList().filter((a) => a.team != p.team && a.team != 0).length;
 
     let i = 0;
     while (numberOfPlayersNotInMyTeam >= numberOfPlayersInMyTeam &&
-        numberOfPlayersInMyTeam < 4 && numberOfSpecs != 0){
+        numberOfPlayersInMyTeam < 4 && numberOfSpecs != 0) {
 
         room.setPlayerTeam(room.getPlayerList().filter((a) => a.team == 0 && a.id != 0)[i].id, p.team);
         i++; numberOfSpecs--; numberOfPlayersInMyTeam++;
     }
 }
 
-function putRandomToPlayerTeam(p){
+function putRandomToPlayerTeam(p) {
     let numberOfSpecs = room.getPlayerList().filter((a) => a.team == 0 && a.id != 0).length;
     let numberOfPlayersInMyTeam = room.getPlayerList().filter((a) => a.team == p.team).length;
-    let numberOfPlayersNotInMyTeam = room.getPlayerList().filter((a) => a.team != p.team && a.team != 0).length ;
+    let numberOfPlayersNotInMyTeam = room.getPlayerList().filter((a) => a.team != p.team && a.team != 0).length;
     const MAX_RANDOM = numberOfSpecs;
     let random;
     let doublons = [];
 
     let i = 0;
     while (numberOfPlayersNotInMyTeam >= numberOfPlayersInMyTeam &&
-        numberOfPlayersInMyTeam < 4 && numberOfSpecs != 0){
+        numberOfPlayersInMyTeam < 4 && numberOfSpecs != 0) {
 
         do {
             random = getRandomInt(MAX_RANDOM);
@@ -2421,7 +2004,7 @@ function putRandomToPlayerTeam(p){
 }
 
 
-function pickPlayerWithNumber(p, m){
+function pickPlayerWithNumber(p, m) {
     let players = room.getPlayerList().filter((a) => a.team == 0 && a.id != 0);
     if (m < players.length && m >= 0)
         room.setPlayerTeam(players[m].id, p.team);
@@ -2429,17 +2012,17 @@ function pickPlayerWithNumber(p, m){
 }
 
 
-function pickPlayerWithName(p, m){
+function pickPlayerWithName(p, m) {
     let players = room.getPlayerList().filter((a) => a.team == 0 && a.id != 0);
     for (var i = 0; i < players.length; i++) {
-        if (players[i].name.includes(m)){
+        if (players[i].name.includes(m)) {
             room.setPlayerTeam(players[i].id, p.team);
             break;
         }
     }
 }
 
-function putWholeTeamToSpec(){
+function putWholeTeamToSpec() {
     let players = room.getPlayerList().filter((a) =>
         a.team == (1 + (gameStats.redScore > gameStats.blueScore)));
 
@@ -2448,9 +2031,9 @@ function putWholeTeamToSpec(){
     }
 }
 
-function pickNewCaptain(){
+function pickNewCaptain() {
     let players = room.getPlayerList().filter((a) => a.team == 0 && a.id != 0);
-    if (players.length != 0){
+    if (players.length != 0) {
         room.setPlayerAdmin(players[0].id, true);
         room.setPlayerTeam(players[0].id, 1 + (gameStats.redScore > gameStats.blueScore));
         return players[0].id;
@@ -2472,14 +2055,14 @@ var active = [];
 
 var currentCaptain = [];
 
-var winStreak = {"team": "", "score": 1};
+var winStreak = { "team": "", "score": 1 };
 
 setInterval(saveStatsFun, 300000);
 setInterval(checkfdps, 1000 * 60 * 4);
 setInterval(deleteStatsFun, 1000 * 60 * 60 * 24 * 7);
 setInterval(updateSelectedAdmins, 1000 * 60 * 4);
 
-setInterval(function(){
+setInterval(function () {
     room.sendChat("🚨🏆 More than 1200 players are already on discord ! 👉 http://discord.gg/jTn2ZDp 👈 You should join too");
     room.sendChat("🚨🤙 Watch our league live commentated on Twitch! Join the biggest European Haxball community! 🏆");
 }, 1000 * 60 * 2);
@@ -2488,8 +2071,8 @@ setInterval(check4def, 1000);
 setInterval(decreaseRqTime, 1000 * 60);
 
 
-room.onPlayerChat = function(p, m){
-    console.log(p.name + "#" + p.id + " : " + m );
+room.onPlayerChat = function (p, m) {
+    console.log(p.name + "#" + p.id + " : " + m);
     if (Stats[p.name].isMuted) return false;
     if (handleCommands(p, m) === false) return false;
     if (sendPM(p, m) === false) return false;
@@ -2500,12 +2083,12 @@ room.onPlayerChat = function(p, m){
 };
 
 
-room.onPlayerTeamChange = function(p, by){
+room.onPlayerTeamChange = function (p, by) {
     console.log("♻️♻️♻️ " + p.name + " has been moved to a team");
     updateTeams(p);
     startBig();
     preventPlaying(p);
-    if (p.id === 0 && p.team != 0){
+    if (p.id === 0 && p.team != 0) {
         room.setPlayerTeam(p.id, 0);
         room.sendChat("😬 Woah, hang on! I'm only a bot, you really think I'm coded to play? 😬");
     }
@@ -2515,7 +2098,7 @@ room.onPlayerTeamChange = function(p, by){
 
 
 
-room.onPlayerJoin = function(player, maps) {
+room.onPlayerJoin = function (player, maps) {
     console.log("👋👋👋 " + player.name + " # " + player.id + " Joined - " + player.auth + " conn : " + player.conn);
     loadFirstMap();
     //forceSameName(player);
@@ -2537,7 +2120,7 @@ room.onPlayerJoin = function(player, maps) {
     }
 };
 
-room.onPlayerLeave = function(player) {
+room.onPlayerLeave = function (player) {
     console.log("😢😢😢 " + player.name + " has left the room");
     lastPlace();
     updateAdmins();
@@ -2548,23 +2131,23 @@ room.onPlayerLeave = function(player) {
 
 };
 
-room.onPersist = function(){
+room.onPersist = function () {
     onPersistHandler();
 };
 
-room.onRestore = function(data){
+room.onRestore = function (data) {
     onRestoreHandler(data);
 };
 
 
 
 
-room.onPlayerKicked = function(kicked, message, ban, by){
+room.onPlayerKicked = function (kicked, message, ban, by) {
     handleBans2(kicked, message, ban, by);
 };
 
 
-room.onGameStart = function(p){
+room.onGameStart = function (p) {
     console.log("🎮🎲🎮 Game has started !");
     updateTeams(p);
     putTeamColor();
@@ -2578,12 +2161,12 @@ room.onGameStart = function(p){
 };
 
 
-room.onTeamGoal = function(team){
+room.onTeamGoal = function (team) {
     handleGoals(team);
 };
 
 
-room.onGameStop = function(p){
+room.onGameStop = function (p) {
     console.log("🎮🎲🎮 Game has ended !");
     updateTeams(p);
     resetMutes();
@@ -2593,7 +2176,7 @@ room.onGameStop = function(p){
 
 
 
-room.onGameTick = function(){
+room.onGameTick = function () {
     gameControl.updateBallOwner();
     gameControl.updateLastBallOwners();
     gameControl.updatePassesInARow();
@@ -2602,12 +2185,12 @@ room.onGameTick = function(){
     if (mode === true) setInterval(handleOvertime, 5000);
 };
 
-room.onPlayerBallKick = function (player){
+room.onPlayerBallKick = function (player) {
     gameControl.currentBallOwner = player.name;
 };
 
 
-room.onTeamVictory = function(player){
+room.onTeamVictory = function (player) {
     console.log("🎮🎉🎮 Game has ended on a Victory ! 🎉");
     updateTeams(player);
     if (mode === false) handleEndGame();
@@ -2622,15 +2205,15 @@ room.onTeamVictory = function(player){
 
 };
 
-room.onPlayerAdminChange = function(p, by){
-    if (by != null && Stats[p.name].isTrustedAdmin > Stats[by.name].isTrustedAdmin){
+room.onPlayerAdminChange = function (p, by) {
+    if (by != null && Stats[p.name].isTrustedAdmin > Stats[by.name].isTrustedAdmin) {
         room.kickPlayer(by.id, "Don't try this at home, kid.", false);
         room.setPlayerAdmin(p.id, true);
     }
     updateAdmins();
 };
 
-room.onRoomLink = function(){
+room.onRoomLink = function () {
     let vide = "";
     vide.name = "";
     loadStats();
@@ -2640,14 +2223,14 @@ room.onRoomLink = function(){
 };
 
 
-room.onStadiumChange = function(name, by){
+room.onStadiumChange = function (name, by) {
     handleStadiumChange(name, by);
 };
 
 
 
 
-room.onPlayerActivity = function(p){
+room.onPlayerActivity = function (p) {
     if (!active.includes(Stats[p.name].conn)) {
         active.push(Stats[p.name].conn);
     }
@@ -2657,8 +2240,8 @@ room.onPlayerActivity = function(p){
 
 
 /* Python-like update dict method having at least an empty object */
-function updateObject(object, p){
-    if (object.hasOwnProperty(p.name)){
+function updateObject(object, p) {
+    if (object.hasOwnProperty(p.name)) {
         object[p.name]++;
     }
     else {
